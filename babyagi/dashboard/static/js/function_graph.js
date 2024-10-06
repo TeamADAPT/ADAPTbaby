@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cy.add(elements);
             cy.layout({ name: 'cose' }).run();
 
+            cy.center();
             cy.fit(40);
 
             cy.zoom({
@@ -146,7 +147,51 @@ document.addEventListener('DOMContentLoaded', () => {
     cy.on('zoom pan', () => {
         closeOverlay();
     });
+
+    addZoomControls();
 });
+
+function addZoomControls() {
+    const zoomControls = document.createElement('div');
+    zoomControls.id = 'zoom-controls';
+    zoomControls.innerHTML = `
+        <button id="zoom-in">+</button>
+        <button id="zoom-out">-</button>
+        <button id="zoom-fit">Fit</button>
+        <button id="zoom-center">Center</button>
+    `;
+    document.getElementById('graph').appendChild(zoomControls);
+
+    document.getElementById('zoom-in').addEventListener('click', () => {
+        cy.animate({
+            zoom: cy.zoom() * 1.2,
+            center: {
+                eles: cy.elements()
+            }
+        }, {
+            duration: 200
+        });
+    });
+
+    document.getElementById('zoom-out').addEventListener('click', () => {
+        cy.animate({
+            zoom: cy.zoom() / 1.2,
+            center: {
+                eles: cy.elements()
+            }
+        }, {
+            duration: 200
+        });
+    });
+
+    document.getElementById('zoom-fit').addEventListener('click', () => {
+        cy.fit(50);
+    });
+
+    document.getElementById('zoom-center').addEventListener('click', () => {
+        cy.center();
+    });
+}
 
 function showFunctionOverlay(functionName) {
     const overlay = document.getElementById('overlay');
