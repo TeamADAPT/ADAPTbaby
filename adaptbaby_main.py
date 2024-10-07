@@ -4,6 +4,11 @@ from flask import request, jsonify, render_template
 from dotenv import load_dotenv
 import logging
 from datetime import datetime
+from langchain_community.llms import OpenAI, Anthropic
+from langchain_community.chat_models import ChatOpenAI, ChatAnthropic
+from langchain.schema import HumanMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
+from litellm import completion
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -15,43 +20,6 @@ logger.info("Initializing ADAPTbaby application")
 # Load environment variables
 load_dotenv()
 
-# Set up OpenAI API key
-openai_api_key = os.getenv('OpenAI_PROJECT_API_KEY')
-if not openai_api_key:
-    error_message = "OpenAI_PROJECT_API_KEY not found in environment variables. Please check your .env file."
-    print(error_message)
-    logger.error(error_message)
-    raise ValueError(error_message)
-
-# Set the API key directly in the environment variables
-os.environ['OPENAI_API_KEY'] = openai_api_key
-
-# Print masked API key for debugging
-masked_key = f"{openai_api_key[:5]}...{openai_api_key[-5:]}"
-print(f"Using API key: {masked_key}")
-logger.info(f"Using API key: {masked_key}")
-
-# Add the OpenAI API key to BabyAGI
-try:
-    babyagi.add_key_wrapper('openai_api_key', openai_api_key)
-    logger.info("OpenAI API key added successfully to BabyAGI")
-except Exception as e:
-    error_message = f"Error adding OpenAI API key to BabyAGI: {str(e)}"
-    print(error_message)
-    logger.error(error_message)
-    raise
-
-# Load necessary function packs
-try:
-    babyagi.load_functions("babyagi/functionz/packs/default/default_functions.py")
-    babyagi.load_functions("babyagi/functionz/packs/default/ai_functions.py")
-    logger.info("Function packs loaded successfully")
-except Exception as e:
-    error_message = f"Error loading function packs: {str(e)}"
-    print(error_message)
-    logger.error(error_message)
-    raise
-
 # Initialize agent memory
 agent_memory = []
 
@@ -62,34 +30,69 @@ AVAILABLE_MODELS = {
     "gpt-3.5-turbo": "GPT-3.5 Turbo",
     "gpt-3.5-turbo-16k": "GPT-3.5 Turbo 16k",
     "o1-preview": "O1 Preview",
-    "o1-mini": "O1 Mini"
+    "o1-mini": "O1 Mini",
+    "ai21-jumbo-instruct": "AI21 Jumbo Instruct",
+    "cohere-command-r": "Cohere Command R",
+    "cohere-command-r-plus": "Cohere Command R Plus",
+    "meta-llama-3-70b-instruct": "Meta Llama 3 70B Instruct",
+    "meta-llama-3-8b-instruct": "Meta Llama 3 8B Instruct",
+    "mixtral-large": "Mixtral Large",
+    "mistral-small": "Mistral Small",
+    "phi-3-medium-instruct-12b": "Phi-3 Medium Instruct 12B",
+    "gemini-1.5-flash-latest": "Gemini 1.5 Flash Latest",
+    "gemini-1.5-pro-latest": "Gemini 1.5 Pro Latest",
+    "claude-2": "Claude 2",
 }
 
+def get_llm(model_key):
+    if model_key.startswith("gpt-") or model_key.startswith("o1-"):
+        return ChatOpenAI(model_name=model_key, temperature=0.7, openai_api_key=os.getenv('OpenAI_PROJECT_API_KEY'))
+    elif model_key.startswith("ai21-") or model_key.startswith("cohere-") or model_key.startswith("meta-llama-") or model_key.startswith("mixtral-") or model_key.startswith("mistral-") or model_key.startswith("phi-"):
+        return f"azure_ai/{model_key}"
+    elif model_key.startswith("gemini-"):
+        return ChatGoogleGenerativeAI(model=model_key, temperature=0.7)
+    elif model_key == "claude-2":
+        return ChatAnthropic(model=model_key, temperature=0.7, anthropic_api_key=os.getenv('Anthropic_ADAPTbaby_241006'))
+    else:
+        return ChatOpenAI(temperature=0.7, openai_api_key=os.getenv('OpenAI_PROJECT_API_KEY'))
+
+def langchain_completion(prompt, model_key="gpt-3.5-turbo"):
+    llm = get_llm(model_key)
+    if isinstance(llm, str) and llm.startswith("azure_ai/"):
+        response = completion(
+            model=llm,
+            messages=[{"role": "user", "content": prompt}],
+            api_key=os.getenv('TeamADAPT_GitHub_FINE_GRAINED_PAT'),
+            api_base=os.getenv('GITHUB_MODELS_ENDPOINT')
+        )
+        return response.choices[0].message.content
+    else:
+        messages = [HumanMessage(content=prompt)]
+        response = llm(messages)
+        return response.content
+
 @babyagi.register_function()
-def adaptbaby_agent(task, model="gpt-4o", conversation_history=[]):
-    """An enhanced agent that processes tasks using OpenAI's API and maintains memory."""
+def adaptbaby_agent(task, model="gpt-3.5-turbo", conversation_history=[]):
+    """An enhanced agent that processes tasks using Langchain's LLMs and maintains memory."""
     global agent_memory
     logger.info(f"Processing task: {task}")
+    logger.info(f"Using model: {model}")
 
     try:
-        # Debug: Print the current OpenAI API key
-        current_key = os.getenv('OPENAI_API_KEY')
-        logger.info(f"Current OpenAI API key: {current_key[:5]}...{current_key[-5:]}")
-
         # Prepare conversation context
         context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in conversation_history])
         
         # Analyze the task
-        task_analysis = babyagi.gpt_call(f"Given the following conversation:\n{context}\n\nAnalyze and categorize this task: {task}")
+        task_analysis = langchain_completion(f"Given the following conversation:\n{context}\n\nAnalyze and categorize this task: {task}", model)
         
         # Generate a plan
-        plan = babyagi.gpt_call(f"Given the following conversation and task analysis:\n{context}\n{task_analysis}\n\nCreate a step-by-step plan to accomplish this task: {task}")
+        plan = langchain_completion(f"Given the following conversation and task analysis:\n{context}\n{task_analysis}\n\nCreate a step-by-step plan to accomplish this task: {task}", model)
         
         # Execute the plan (simulated)
-        execution_result = babyagi.gpt_call(f"Given the following conversation, task analysis, and plan:\n{context}\n{task_analysis}\n{plan}\n\nSimulate the execution of this plan: {plan}")
+        execution_result = langchain_completion(f"Given the following conversation, task analysis, and plan:\n{context}\n{task_analysis}\n{plan}\n\nSimulate the execution of this plan: {plan}", model)
         
         # Summarize the result
-        summary = babyagi.gpt_call(f"Given the following conversation, task analysis, plan, and execution result:\n{context}\n{task_analysis}\n{plan}\n{execution_result}\n\nSummarize the result of this task execution.")
+        summary = langchain_completion(f"Given the following conversation, task analysis, plan, and execution result:\n{context}\n{task_analysis}\n{plan}\n{execution_result}\n\nSummarize the result of this task execution.", model)
         
         # Update agent memory
         memory_entry = {
@@ -135,7 +138,7 @@ def create_app():
     def chat():
         data = request.json
         message = data['message']
-        model = data.get('model', 'gpt-4o')
+        model = data.get('model', 'gpt-3.5-turbo')
         conversation_history = data.get('conversation_history', [])
         conversation_history.append({"role": "user", "content": message})
         
