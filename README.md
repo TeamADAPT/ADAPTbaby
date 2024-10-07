@@ -5,7 +5,7 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 ## Features
 
 - Enhanced AI agent with memory capabilities and conversation history support
-- Multiple LLM model support with user-selectable options (OpenAI, Anthropic, and Hugging Face models)
+- Multiple LLM model support with user-selectable options (OpenAI, Anthropic, Gemini, and Hugging Face models)
 - Interactive and visually appealing chat interface with markdown support
 - Task processing workflow (analysis, planning, execution, summarization)
 - Detailed task information display with download functionality
@@ -20,6 +20,7 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 - API keys for:
   - OpenAI
   - Anthropic
+  - Google (for Gemini models)
   - Hugging Face
 
 ## Installation
@@ -45,6 +46,7 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
    ```
    OpenAI_PROJECT_API_KEY=your_openai_api_key_here
    ANTHROPIC_API_KEY=your_anthropic_api_key_here
+   GOOGLE_API_KEY=your_google_api_key_here
    HF_ACCESS_API_TOKEN=your_huggingface_access_token_here
    ```
 
@@ -61,7 +63,7 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 
 ## Usage
 
-1. Select an LLM model from the dropdown menu (OpenAI, Anthropic, or Hugging Face).
+1. Select an LLM model from the dropdown menu (OpenAI, Anthropic, Gemini, or Hugging Face).
 2. Enter your task or question in the input box and click "Send" or press Enter.
 3. View the AI's response in the chat interface.
 4. Toggle debug mode to see detailed task information.
@@ -70,8 +72,9 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 
 ## Available Models
 
-- OpenAI Models: GPT-4, GPT-4 Turbo, GPT-3.5 Turbo, GPT-3.5 Turbo 16k
-- Anthropic Models: Claude-2.1, Claude Instant 1.2
+- OpenAI Models: GPT-4, GPT-4 Turbo, GPT-3.5 Turbo, GPT-3.5 Turbo 16k, and more
+- Anthropic Models: Claude 2.1, Claude Instant 1.2, Claude 3 Opus, Claude 3 Sonnet, Claude 3 Haiku
+- Gemini Models: Gemini Pro, Gemini Pro Vision, Gemini 1.5 Pro (various versions)
 - Hugging Face Models: DistilBERT (for sentiment analysis), GPT-2, and other models available through the Hugging Face API
 
 ## Documentation
@@ -100,6 +103,7 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 - OpenAI for providing the GPT models
 - Anthropic for the Claude models
+- Google for the Gemini models
 - Hugging Face for their extensive model library and APIs
 - The BabyAGI project for the initial inspiration
 
@@ -110,14 +114,14 @@ For any questions or feedback, please open an issue on the GitHub repository or 
 ## Recent Updates
 
 As of the latest commit:
-- Updated `adaptbaby_main.py` with multi-model support, including OpenAI, Anthropic, and Hugging Face models
+- Updated `adaptbaby_main.py` with expanded multi-model support, including OpenAI, Anthropic, Gemini, and Hugging Face models
 - Integrated multiple LLM providers and implemented `langchain_completion` function to handle different model types
 - Enhanced `adaptbaby_agent` to use the new completion function
-- Successfully tested integration with OpenAI (GPT-4), Anthropic (Claude-2.1), and Hugging Face (DistilBERT) models
+- Successfully tested integration with various models from different providers
 - Improved error handling and logging for better debugging and monitoring
 
 Current Development Status:
-- The project now supports a wide range of models from OpenAI, Anthropic, and Hugging Face
+- The project now supports a wide range of models from OpenAI, Anthropic, Google (Gemini), and Hugging Face
 - Updates include changes to dashboard components, templates, function packs, and examples
 - The project is actively being developed with ongoing improvements to various aspects of the system
 

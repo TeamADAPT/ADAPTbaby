@@ -6,6 +6,7 @@ import logging
 from datetime import datetime
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.schema import HumanMessage
 import litellm
 from transformers import pipeline
@@ -38,6 +39,7 @@ agent_memory = []
 
 # Available models
 AVAILABLE_MODELS = {
+    # OpenAI models
     "gpt-4o": "GPT-4o",
     "gpt-4o-mini": "GPT-4o Mini",
     "gpt-3.5-turbo": "GPT-3.5 Turbo",
@@ -46,8 +48,25 @@ AVAILABLE_MODELS = {
     "gpt-4-32k": "GPT-4 32k",
     "gpt-4-1106-preview": "GPT-4 Turbo",
     "gpt-4-vision-preview": "GPT-4 Vision",
+    
+    # Anthropic models
     "claude-2.1": "Claude 2.1",
     "claude-instant-1.2": "Claude Instant 1.2",
+    "claude-3-opus-20240229": "Claude 3 Opus",
+    "claude-3-sonnet-20240229": "Claude 3 Sonnet",
+    "claude-3-haiku-20240307": "Claude 3 Haiku",
+    
+    # Gemini models
+    "gemini-pro": "Gemini Pro",
+    "gemini-pro-vision": "Gemini Pro Vision",
+    "gemini-1.5-pro-latest": "Gemini 1.5 Pro Latest",
+    "gemini-1.5-pro": "Gemini 1.5 Pro",
+    "gemini-1.5-pro-001": "Gemini 1.5 Pro 001",
+    "gemini-1.5-pro-vision-latest": "Gemini 1.5 Pro Vision Latest",
+    "gemini-1.5-pro-vision": "Gemini 1.5 Pro Vision",
+    "gemini-1.5-pro-vision-001": "Gemini 1.5 Pro Vision 001",
+    
+    # Hugging Face models
     "hf-distilbert-base-uncased-finetuned-sst-2-english": "Hugging Face DistilBERT (Sentiment Analysis)",
     "hf-gpt2": "Hugging Face GPT-2",
 }
@@ -62,6 +81,8 @@ def get_llm(model_key):
             return ChatOpenAI(model_name=model_key, temperature=0.7, openai_api_key=os.getenv('OpenAI_PROJECT_API_KEY'))
         elif model_key.startswith("claude-"):
             return ChatAnthropic(model=model_key, temperature=0.7, anthropic_api_key=os.getenv('ANTHROPIC_API_KEY'))
+        elif model_key.startswith("gemini-"):
+            return ChatGoogleGenerativeAI(model=model_key, temperature=0.7, google_api_key=os.getenv('GOOGLE_API_KEY'))
         elif model_key.startswith("hf-"):
             return get_huggingface_model(model_key)
         else:
