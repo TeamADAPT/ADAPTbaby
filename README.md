@@ -86,3 +86,22 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 ## Contact
 
 For any questions or feedback, please open an issue on the GitHub repository or contact the project maintainers.
+
+## Recent Updates
+
+As of the latest commit (886ab90):
+- Updated `adaptbaby_main.py` with multi-model support
+- Integrated multiple LLM providers (OpenAI, Azure AI, Google Gemini, Anthropic)
+- Updated model selection logic and implemented `langchain_completion` function
+- Enhanced `adaptbaby_agent` to use the new completion function
+
+Current Development Status:
+- Many files across the project have been modified and are pending staging and commit
+- Updates include changes to dashboard components, templates, function packs, and examples
+- The project is actively being developed with ongoing improvements to various aspects of the system
+
+Next Steps:
+- Review and stage modified files
+- Commit changes with descriptive commit messages
+- Update documentation to reflect all recent changes and new features
+- Continue testing and refining the multi-model support implementation
