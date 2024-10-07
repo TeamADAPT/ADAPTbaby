@@ -5,7 +5,7 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 ## Features
 
 - Enhanced AI agent with memory capabilities and conversation history support
-- Multiple LLM model support with user-selectable options (OpenAI, Anthropic, Gemini, and Hugging Face models)
+- Multiple LLM model support with user-selectable options (OpenAI, Anthropic, Gemini, Groq, and Hugging Face models)
 - Interactive and visually appealing chat interface with markdown support
 - Task processing workflow (analysis, planning, execution, summarization)
 - Detailed task information display with download functionality
@@ -21,6 +21,7 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
   - OpenAI
   - Anthropic
   - Google (for Gemini models)
+  - Groq
   - Hugging Face
 
 ## Installation
@@ -47,6 +48,7 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
    OpenAI_PROJECT_API_KEY=your_openai_api_key_here
    ANTHROPIC_API_KEY=your_anthropic_api_key_here
    GOOGLE_API_KEY=your_google_api_key_here
+   GROQ_API_KEY=your_groq_api_key_here
    HF_ACCESS_API_TOKEN=your_huggingface_access_token_here
    ```
 
@@ -63,7 +65,7 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 
 ## Usage
 
-1. Select an LLM model from the dropdown menu (OpenAI, Anthropic, Gemini, or Hugging Face).
+1. Select an LLM model from the dropdown menu (OpenAI, Anthropic, Gemini, Groq, or Hugging Face).
 2. Enter your task or question in the input box and click "Send" or press Enter.
 3. View the AI's response in the chat interface.
 4. Toggle debug mode to see detailed task information.
@@ -75,6 +77,7 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 - OpenAI Models: GPT-4, GPT-4 Turbo, GPT-3.5 Turbo, GPT-3.5 Turbo 16k, and more
 - Anthropic Models: Claude 2.1, Claude Instant 1.2, Claude 3.5 Opus, Claude 3.5 Sonnet, Claude 3.5 Haiku
 - Gemini Models: Gemini Pro, Gemini Pro Vision, Gemini 1.5 Pro (various versions)
+- Groq Models: Llama 3.1 70B Versatile, Llama 3.1 8B Instant, Mixtral 8x7B 32K, Gemma 7B IT
 - Hugging Face Models: DistilBERT (for sentiment analysis), GPT-2, and other models available through the Hugging Face API
 
 ## Documentation
@@ -91,6 +94,11 @@ To run tests for the application, use the following command:
 python -m unittest discover tests
 ```
 
+To test the Groq API and available models, run:
+```
+python test_models.py
+```
+
 ## Contributing
 
 Contributions to ADAPTbaby are welcome! Please refer to the `CONTRIBUTING.md` file for guidelines on how to contribute to this project.
@@ -104,6 +112,7 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 - OpenAI for providing the GPT models
 - Anthropic for the Claude models
 - Google for the Gemini models
+- Groq for their high-performance AI models
 - Hugging Face for their extensive model library and APIs
 - The BabyAGI project for the initial inspiration
 
@@ -114,15 +123,15 @@ For any questions or feedback, please open an issue on the GitHub repository or 
 ## Recent Updates
 
 As of the latest commit:
-- Updated `adaptbaby_main.py` with expanded multi-model support, including OpenAI, Anthropic, Gemini, and Hugging Face models
-- Added support for new Claude 3.5 models: Claude 3.5 Opus, Claude 3.5 Sonnet, and Claude 3.5 Haiku
-- Integrated multiple LLM providers and implemented `langchain_completion` function to handle different model types
-- Enhanced `adaptbaby_agent` to use the new completion function
-- Successfully tested integration with various models from different providers
-- Improved error handling and logging for better debugging and monitoring
+- Added support for Groq models: Llama 3.1 70B Versatile, Llama 3.1 8B Instant, Mixtral 8x7B 32K, and Gemma 7B IT
+- Updated `adaptbaby_main.py` with expanded multi-model support, including OpenAI, Anthropic, Gemini, Groq, and Hugging Face models
+- Implemented `GroqLLM` class for handling Groq API requests
+- Created `test_models.py` script for testing Groq API and available models
+- Updated `.env.example` with new API configurations for Groq and other services
+- Enhanced error handling and logging for better debugging and monitoring
 
 Current Development Status:
-- The project now supports a wide range of models from OpenAI, Anthropic, Google (Gemini), and Hugging Face
+- The project now supports a wide range of models from OpenAI, Anthropic, Google (Gemini), Groq, and Hugging Face
 - Updates include changes to dashboard components, templates, function packs, and examples
 - The project is actively being developed with ongoing improvements to various aspects of the system
 
