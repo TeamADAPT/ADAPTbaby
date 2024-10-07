@@ -4,10 +4,9 @@ from flask import request, jsonify, render_template
 from dotenv import load_dotenv
 import logging
 from datetime import datetime
-from langchain_community.llms import OpenAI, Anthropic
-from langchain_community.chat_models import ChatOpenAI, ChatAnthropic
+from langchain_community.llms import OpenAI
+from langchain_community.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
 from litellm import completion
 
 # Set up logging
@@ -29,8 +28,6 @@ AVAILABLE_MODELS = {
     "gpt-4o-mini": "GPT-4o Mini",
     "gpt-3.5-turbo": "GPT-3.5 Turbo",
     "gpt-3.5-turbo-16k": "GPT-3.5 Turbo 16k",
-    "o1-preview": "O1 Preview",
-    "o1-mini": "O1 Mini",
     "ai21-jumbo-instruct": "AI21 Jumbo Instruct",
     "cohere-command-r": "Cohere Command R",
     "cohere-command-r-plus": "Cohere Command R Plus",
@@ -39,20 +36,13 @@ AVAILABLE_MODELS = {
     "mixtral-large": "Mixtral Large",
     "mistral-small": "Mistral Small",
     "phi-3-medium-instruct-12b": "Phi-3 Medium Instruct 12B",
-    "gemini-1.5-flash-latest": "Gemini 1.5 Flash Latest",
-    "gemini-1.5-pro-latest": "Gemini 1.5 Pro Latest",
-    "claude-2": "Claude 2",
 }
 
 def get_llm(model_key):
-    if model_key.startswith("gpt-") or model_key.startswith("o1-"):
+    if model_key.startswith("gpt-"):
         return ChatOpenAI(model_name=model_key, temperature=0.7, openai_api_key=os.getenv('OpenAI_PROJECT_API_KEY'))
-    elif model_key.startswith("ai21-") or model_key.startswith("cohere-") or model_key.startswith("meta-llama-") or model_key.startswith("mixtral-") or model_key.startswith("mistral-") or model_key.startswith("phi-"):
+    elif model_key in ["ai21-jumbo-instruct", "cohere-command-r", "cohere-command-r-plus", "meta-llama-3-70b-instruct", "meta-llama-3-8b-instruct", "mixtral-large", "mistral-small", "phi-3-medium-instruct-12b"]:
         return f"azure_ai/{model_key}"
-    elif model_key.startswith("gemini-"):
-        return ChatGoogleGenerativeAI(model=model_key, temperature=0.7)
-    elif model_key == "claude-2":
-        return ChatAnthropic(model=model_key, temperature=0.7, anthropic_api_key=os.getenv('Anthropic_ADAPTbaby_241006'))
     else:
         return ChatOpenAI(temperature=0.7, openai_api_key=os.getenv('OpenAI_PROJECT_API_KEY'))
 

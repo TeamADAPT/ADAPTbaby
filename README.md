@@ -5,7 +5,7 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 ## Features
 
 - Enhanced AI agent with memory capabilities and conversation history support
-- Multiple LLM model support with user-selectable options (GPT-4o, GPT-3.5 Turbo, etc.)
+- Multiple LLM model support with user-selectable options (OpenAI models, GitHub Models)
 - Interactive and visually appealing chat interface with markdown support
 - Task processing workflow (analysis, planning, execution, summarization)
 - Detailed task information display with download functionality
@@ -18,6 +18,7 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 - Python 3.7+
 - pip (Python package manager)
 - OpenAI API key
+- GitHub Models API key (for Azure AI models)
 
 ## Installation
 
@@ -38,9 +39,11 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
    pip install -r requirements.txt
    ```
 
-4. Create a `.env` file in the project root and add your OpenAI API key:
+4. Create a `.env` file in the project root and add your API keys:
    ```
-   OpenAI_PROJECT_API_KEY=your_api_key_here
+   OpenAI_PROJECT_API_KEY=your_openai_api_key_here
+   TeamADAPT_GitHub_FINE_GRAINED_PAT=your_github_models_api_key_here
+   GITHUB_MODELS_ENDPOINT=your_github_models_endpoint_here
    ```
 
 ## Running the Application
@@ -56,12 +59,17 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 
 ## Usage
 
-1. Select an LLM model from the dropdown menu.
+1. Select an LLM model from the dropdown menu (OpenAI or GitHub Models).
 2. Enter your task or question in the input box and click "Send" or press Enter.
 3. View the AI's response in the chat interface.
 4. Toggle debug mode to see detailed task information.
 5. Use the download button to save task details as a markdown file.
 6. Navigate through different sections using the top navigation bar.
+
+## Available Models
+
+- OpenAI Models: GPT-4o, GPT-4o Mini, GPT-3.5 Turbo, GPT-3.5 Turbo 16k
+- GitHub Models: AI21 Jumbo Instruct, Cohere Command R, Cohere Command R Plus, Meta Llama 3 (70B and 8B Instruct), Mixtral Large, Mistral Small, Phi-3 Medium Instruct 12B
 
 ## Testing
 
@@ -81,6 +89,7 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 ## Acknowledgments
 
 - OpenAI for providing the GPT models
+- GitHub for providing access to various AI models
 - The BabyAGI project for the initial inspiration
 
 ## Contact
@@ -89,19 +98,24 @@ For any questions or feedback, please open an issue on the GitHub repository or 
 
 ## Recent Updates
 
-As of the latest commit (886ab90):
-- Updated `adaptbaby_main.py` with multi-model support
-- Integrated multiple LLM providers (OpenAI, Azure AI, Google Gemini, Anthropic)
-- Updated model selection logic and implemented `langchain_completion` function
+As of the latest commit:
+- Updated `adaptbaby_main.py` with multi-model support, including GitHub Models
+- Integrated multiple LLM providers (OpenAI and GitHub Models via Azure AI)
+- Updated model selection logic and implemented `langchain_completion` function to handle different model types
 - Enhanced `adaptbaby_agent` to use the new completion function
+- Added support for various GitHub Models (AI21, Cohere, Meta Llama, Mixtral, Mistral, Phi)
+- Improved error handling and logging for better debugging and monitoring
 
 Current Development Status:
-- Many files across the project have been modified and are pending staging and commit
+- The project now supports a wide range of models from both OpenAI and GitHub
 - Updates include changes to dashboard components, templates, function packs, and examples
 - The project is actively being developed with ongoing improvements to various aspects of the system
 
 Next Steps:
-- Review and stage modified files
-- Commit changes with descriptive commit messages
-- Update documentation to reflect all recent changes and new features
 - Continue testing and refining the multi-model support implementation
+- Optimize performance for handling multiple users and tasks simultaneously
+- Implement user authentication and session management
+- Develop comprehensive unit tests to ensure system reliability
+- Explore advanced features of GitHub Models and how they can be leveraged in the project
+
+For a detailed progress log, please refer to the `BABES_ADAPTbaby_Progress.md` file in the project root.
