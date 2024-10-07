@@ -65,7 +65,16 @@ AVAILABLE_MODELS = {
     "gemini-1.5-pro-vision-latest": "Gemini 1.5 Pro Vision Latest",
     "gemini-1.5-pro-vision": "Gemini 1.5 Pro Vision",
     "gemini-1.5-pro-vision-001": "Gemini 1.5 Pro Vision 001",
-    
+    "gemini-1.0-pro-latest": "Gemini 1.0 Pro Latest",
+    "gemini-1.0-pro": "Gemini 1.0 Pro",
+    "gemini-1.0-pro-001": "Gemini 1.0 Pro 001",
+    "gemini-1.0-pro-vision-latest": "Gemini 1.0 Pro Vision Latest",
+    "gemini-1.0-pro-vision": "Gemini 1.0 Pro Vision",
+    "gemini-1.0-pro-vision-001": "Gemini 1.0 Pro Vision 001",
+    "chat-bison-001": "Chat Bison 001",
+    "text-bison-001": "Text Bison 001",
+    "embedding-gecko-001": "Embedding Gecko 001",
+
     # Hugging Face models
     "hf-distilbert-base-uncased-finetuned-sst-2-english": "Hugging Face DistilBERT (Sentiment Analysis)",
     "hf-gpt2": "Hugging Face GPT-2",
