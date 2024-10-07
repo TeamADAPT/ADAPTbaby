@@ -4,14 +4,28 @@ from flask import request, jsonify, render_template
 from dotenv import load_dotenv
 import logging
 from datetime import datetime
-from langchain_community.llms import OpenAI
-from langchain_community.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 from langchain.schema import HumanMessage
-from litellm import completion
+import litellm
+from transformers import pipeline
+from huggingface_hub import snapshot_download
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    filename='adaptbaby.log',
+    filemode='w'
+)
 logger = logging.getLogger(__name__)
+
+# Add console handler to print logs to console as well
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
 
 print("Starting ADAPTbaby application...")
 logger.info("Initializing ADAPTbaby application")
@@ -28,38 +42,83 @@ AVAILABLE_MODELS = {
     "gpt-4o-mini": "GPT-4o Mini",
     "gpt-3.5-turbo": "GPT-3.5 Turbo",
     "gpt-3.5-turbo-16k": "GPT-3.5 Turbo 16k",
-    "ai21-jumbo-instruct": "AI21 Jumbo Instruct",
-    "cohere-command-r": "Cohere Command R",
-    "cohere-command-r-plus": "Cohere Command R Plus",
-    "meta-llama-3-70b-instruct": "Meta Llama 3 70B Instruct",
-    "meta-llama-3-8b-instruct": "Meta Llama 3 8B Instruct",
-    "mixtral-large": "Mixtral Large",
-    "mistral-small": "Mistral Small",
-    "phi-3-medium-instruct-12b": "Phi-3 Medium Instruct 12B",
+    "gpt-4": "GPT-4",
+    "gpt-4-32k": "GPT-4 32k",
+    "gpt-4-1106-preview": "GPT-4 Turbo",
+    "gpt-4-vision-preview": "GPT-4 Vision",
+    "claude-2.1": "Claude 2.1",
+    "claude-instant-1.2": "Claude Instant 1.2",
+    "hf-distilbert-base-uncased-finetuned-sst-2-english": "Hugging Face DistilBERT (Sentiment Analysis)",
+    "hf-gpt2": "Hugging Face GPT-2",
 }
 
+# Enable verbose logging for LiteLLM
+litellm.set_verbose = True
+
 def get_llm(model_key):
-    if model_key.startswith("gpt-"):
-        return ChatOpenAI(model_name=model_key, temperature=0.7, openai_api_key=os.getenv('OpenAI_PROJECT_API_KEY'))
-    elif model_key in ["ai21-jumbo-instruct", "cohere-command-r", "cohere-command-r-plus", "meta-llama-3-70b-instruct", "meta-llama-3-8b-instruct", "mixtral-large", "mistral-small", "phi-3-medium-instruct-12b"]:
-        return f"azure_ai/{model_key}"
-    else:
-        return ChatOpenAI(temperature=0.7, openai_api_key=os.getenv('OpenAI_PROJECT_API_KEY'))
+    logger.info(f"Getting LLM for model: {model_key}")
+    try:
+        if model_key.startswith("gpt-"):
+            return ChatOpenAI(model_name=model_key, temperature=0.7, openai_api_key=os.getenv('OpenAI_PROJECT_API_KEY'))
+        elif model_key.startswith("claude-"):
+            return ChatAnthropic(model=model_key, temperature=0.7, anthropic_api_key=os.getenv('ANTHROPIC_API_KEY'))
+        elif model_key.startswith("hf-"):
+            return get_huggingface_model(model_key)
+        else:
+            logger.warning(f"Unknown model key: {model_key}. Defaulting to GPT-3.5-turbo.")
+            return ChatOpenAI(temperature=0.7, openai_api_key=os.getenv('OpenAI_PROJECT_API_KEY'))
+    except Exception as e:
+        logger.error(f"Error initializing LLM for model {model_key}: {str(e)}")
+        raise
+
+def get_huggingface_model(model_key):
+    logger.info(f"Initializing Hugging Face model: {model_key}")
+    try:
+        model_name = model_key.replace("hf-", "")
+        cache_dir = os.path.expanduser("~/.cache/huggingface/hub")
+        logger.info(f"Hugging Face cache directory: {cache_dir}")
+
+        # Check if model files are already in cache
+        try:
+            snapshot_download(repo_id=model_name, cache_dir=cache_dir)
+            logger.info(f"Model {model_name} is already cached or has been downloaded.")
+        except Exception as e:
+            logger.error(f"Error downloading model {model_name}: {str(e)}")
+
+        if model_name == "distilbert-base-uncased-finetuned-sst-2-english":
+            logger.debug(f"Creating sentiment-analysis pipeline for {model_name}")
+            return pipeline("sentiment-analysis", model=model_name)
+        elif model_name == "gpt2":
+            logger.debug(f"Creating text-generation pipeline for {model_name}")
+            return pipeline("text-generation", model=model_name, max_length=200, max_new_tokens=100)
+        else:
+            raise ValueError(f"Unsupported Hugging Face model: {model_name}")
+    except Exception as e:
+        logger.error(f"Error initializing Hugging Face model {model_key}: {str(e)}")
+        raise
 
 def langchain_completion(prompt, model_key="gpt-3.5-turbo"):
-    llm = get_llm(model_key)
-    if isinstance(llm, str) and llm.startswith("azure_ai/"):
-        response = completion(
-            model=llm,
-            messages=[{"role": "user", "content": prompt}],
-            api_key=os.getenv('TeamADAPT_GitHub_FINE_GRAINED_PAT'),
-            api_base=os.getenv('GITHUB_MODELS_ENDPOINT')
-        )
-        return response.choices[0].message.content
-    else:
-        messages = [HumanMessage(content=prompt)]
-        response = llm(messages)
-        return response.content
+    logger.info(f"Performing langchain completion with model: {model_key}")
+    try:
+        llm = get_llm(model_key)
+        if model_key.startswith("hf-"):
+            if "distilbert" in model_key:
+                logger.debug(f"Using DistilBERT for sentiment analysis: {prompt}")
+                result = llm(prompt)[0]
+                logger.debug(f"DistilBERT result: {result}")
+                return f"Sentiment: {result['label']}, Score: {result['score']:.2f}"
+            elif "gpt2" in model_key:
+                logger.debug(f"Using GPT-2 for text generation: {prompt}")
+                result = llm(prompt, max_length=200, do_sample=True, temperature=0.7, truncation=True)[0]['generated_text']
+                logger.debug(f"GPT-2 result: {result}")
+                return result
+        else:
+            messages = [HumanMessage(content=prompt)]
+            response = llm.invoke(messages)
+            return response.content
+    except Exception as e:
+        logger.error(f"Error in langchain_completion for model {model_key}: {str(e)}")
+        return f"Error: {str(e)}"
 
 @babyagi.register_function()
 def adaptbaby_agent(task, model="gpt-3.5-turbo", conversation_history=[]):
@@ -132,6 +191,8 @@ def create_app():
         conversation_history = data.get('conversation_history', [])
         conversation_history.append({"role": "user", "content": message})
         
+        logger.info(f"Received chat request. Message: {message}, Model: {model}")
+        
         result = adaptbaby_agent(message, model, conversation_history)
         
         response = {
@@ -140,6 +201,8 @@ def create_app():
             "full_response": result
         }
         conversation_history.append(response)
+        
+        logger.info(f"Chat response generated. Summary: {response['content'][:50]}...")
         
         return jsonify({
             "response": response,

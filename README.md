@@ -5,7 +5,7 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 ## Features
 
 - Enhanced AI agent with memory capabilities and conversation history support
-- Multiple LLM model support with user-selectable options (OpenAI models, GitHub Models)
+- Multiple LLM model support with user-selectable options (OpenAI, Anthropic, and Hugging Face models)
 - Interactive and visually appealing chat interface with markdown support
 - Task processing workflow (analysis, planning, execution, summarization)
 - Detailed task information display with download functionality
@@ -17,8 +17,10 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 
 - Python 3.7+
 - pip (Python package manager)
-- OpenAI API key
-- GitHub Models API key (for Azure AI models)
+- API keys for:
+  - OpenAI
+  - Anthropic
+  - Hugging Face
 
 ## Installation
 
@@ -42,8 +44,8 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 4. Create a `.env` file in the project root and add your API keys:
    ```
    OpenAI_PROJECT_API_KEY=your_openai_api_key_here
-   TeamADAPT_GitHub_FINE_GRAINED_PAT=your_github_models_api_key_here
-   GITHUB_MODELS_ENDPOINT=your_github_models_endpoint_here
+   ANTHROPIC_API_KEY=your_anthropic_api_key_here
+   HF_ACCESS_API_TOKEN=your_huggingface_access_token_here
    ```
 
 ## Running the Application
@@ -59,7 +61,7 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 
 ## Usage
 
-1. Select an LLM model from the dropdown menu (OpenAI or GitHub Models).
+1. Select an LLM model from the dropdown menu (OpenAI, Anthropic, or Hugging Face).
 2. Enter your task or question in the input box and click "Send" or press Enter.
 3. View the AI's response in the chat interface.
 4. Toggle debug mode to see detailed task information.
@@ -68,8 +70,16 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 
 ## Available Models
 
-- OpenAI Models: GPT-4o, GPT-4o Mini, GPT-3.5 Turbo, GPT-3.5 Turbo 16k
-- GitHub Models: AI21 Jumbo Instruct, Cohere Command R, Cohere Command R Plus, Meta Llama 3 (70B and 8B Instruct), Mixtral Large, Mistral Small, Phi-3 Medium Instruct 12B
+- OpenAI Models: GPT-4, GPT-4 Turbo, GPT-3.5 Turbo, GPT-3.5 Turbo 16k
+- Anthropic Models: Claude-2.1, Claude Instant 1.2
+- Hugging Face Models: DistilBERT (for sentiment analysis), GPT-2, and other models available through the Hugging Face API
+
+## Documentation
+
+For detailed information on specific aspects of the project, please refer to the following documents:
+
+- [GitHub Integration Challenges](github_challenges.md): Outlines the challenges encountered while integrating GitHub models and the solutions attempted.
+- [Hugging Face Installation Guide](huggingface_installation.md): Provides step-by-step instructions for installing and setting up Hugging Face models in the project.
 
 ## Testing
 
@@ -89,7 +99,8 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 ## Acknowledgments
 
 - OpenAI for providing the GPT models
-- GitHub for providing access to various AI models
+- Anthropic for the Claude models
+- Hugging Face for their extensive model library and APIs
 - The BabyAGI project for the initial inspiration
 
 ## Contact
@@ -99,23 +110,24 @@ For any questions or feedback, please open an issue on the GitHub repository or 
 ## Recent Updates
 
 As of the latest commit:
-- Updated `adaptbaby_main.py` with multi-model support, including GitHub Models
-- Integrated multiple LLM providers (OpenAI and GitHub Models via Azure AI)
-- Updated model selection logic and implemented `langchain_completion` function to handle different model types
+- Updated `adaptbaby_main.py` with multi-model support, including OpenAI, Anthropic, and Hugging Face models
+- Integrated multiple LLM providers and implemented `langchain_completion` function to handle different model types
 - Enhanced `adaptbaby_agent` to use the new completion function
-- Added support for various GitHub Models (AI21, Cohere, Meta Llama, Mixtral, Mistral, Phi)
+- Successfully tested integration with OpenAI (GPT-4), Anthropic (Claude-2.1), and Hugging Face (DistilBERT) models
 - Improved error handling and logging for better debugging and monitoring
 
 Current Development Status:
-- The project now supports a wide range of models from both OpenAI and GitHub
+- The project now supports a wide range of models from OpenAI, Anthropic, and Hugging Face
 - Updates include changes to dashboard components, templates, function packs, and examples
 - The project is actively being developed with ongoing improvements to various aspects of the system
 
 Next Steps:
-- Continue testing and refining the multi-model support implementation
-- Optimize performance for handling multiple users and tasks simultaneously
+- Implement error handling for cases where specific models might not be available or API keys are missing
+- Optimize the model selection process in the user interface
+- Develop unit tests for each model integration to ensure ongoing reliability
+- Consider implementing a caching mechanism for frequently used models to improve performance
+- Continue refining the multi-model support implementation
 - Implement user authentication and session management
-- Develop comprehensive unit tests to ensure system reliability
-- Explore advanced features of GitHub Models and how they can be leveraged in the project
+- Develop a visual representation of the agent's knowledge graph
 
 For a detailed progress log, please refer to the `BABES_ADAPTbaby_Progress.md` file in the project root.
