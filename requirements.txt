@@ -1,4 +1,14 @@
-babyagi
 flask
-openai
 python-dotenv
+openai
+litellm
+babyagi
+google-generativeai
+anthropic
+langchain
+langchain-openai
+langchain-anthropic
+langchain-google-genai
+langchain-community
+tiktoken
+azure-ai-generative

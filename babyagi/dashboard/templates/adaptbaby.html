@@ -53,7 +53,7 @@
 
             function addMessage(role, content, model = '') {
                 const formattedContent = converter.makeHtml(content);
-                const label = role === 'user' ? 'User' : (model || 'AI');
+                const label = role === 'user' ? 'User' : `AI (${model})`;
                 $('#chat-messages').append(`
                     <div class="${role}-message">
                         <div class="message-label">${label}</div>
@@ -89,7 +89,8 @@
                     }),
                     success: function(response) {
                         const assistantResponse = response.response.content;
-                        addMessage('assistant', assistantResponse, response.response.full_response.model);
+                        const usedModel = response.response.full_response.model;
+                        addMessage('assistant', assistantResponse, usedModel);
                         updateTaskDetails(response.response.full_response);
                         conversationHistory = response.conversation_history;
                     },

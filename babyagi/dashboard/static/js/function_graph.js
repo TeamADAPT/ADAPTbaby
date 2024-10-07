@@ -274,3 +274,23 @@ function showLogs(functionName) {
 function closeOverlay() {
     document.getElementById('overlay').style.display = 'none';
 }
+
+// Mermaid chart zooming
+document.addEventListener('DOMContentLoaded', () => {
+    const mermaidContainer = document.querySelector('.mermaid');
+    if (mermaidContainer) {
+        let scale = 1;
+        const scaleStep = 0.1;
+
+        mermaidContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            if (e.deltaY < 0) {
+                scale += scaleStep;
+            } else {
+                scale -= scaleStep;
+            }
+            scale = Math.max(0.1, Math.min(scale, 3));
+            mermaidContainer.style.transform = `scale(${scale})`;
+        });
+    }
+});

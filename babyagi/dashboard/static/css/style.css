@@ -30,6 +30,17 @@ body, html {
     box-sizing: border-box;
 }
 
+/* Headers */
+h1, h2, h3 {
+    color: var(--secondary-color);
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 24px;
+    font-weight: 600;
+}
+
 /* Navigation */
 nav {
     background-color: var(--secondary-color);
@@ -56,17 +67,6 @@ nav ul li a {
 
 nav ul li a:hover {
     color: var(--primary-color);
-}
-
-/* Headers */
-h1, h2, h3 {
-    color: var(--secondary-color);
-    margin-bottom: 20px;
-}
-
-h1 {
-    font-size: 24px;
-    font-weight: 600;
 }
 
 /* Chat Interface */
@@ -113,7 +113,7 @@ h1 {
 }
 
 .message-content {
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 #input-container {
@@ -299,6 +299,13 @@ h1 {
     max-width: none;
     max-height: none;
 }
+
+/* Syntax Highlighting */
+.string { color: #2ecc71; }
+.number { color: #e74c3c; }
+.boolean { color: #3498db; }
+.null { color: #9b59b6; }
+.key { color: #f39c12; }
 
 /* Responsive design */
 @media (max-width: 768px) {
