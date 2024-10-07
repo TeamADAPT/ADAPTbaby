@@ -12,3 +12,9 @@ langchain-google-genai
 langchain-community
 tiktoken
 azure-ai-generative
+transformers
+torch
+torchvision
+torchaudio
+sentencepiece
+protobuf
