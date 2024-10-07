@@ -12,6 +12,7 @@
     <nav>
         <ul>
             <li><a href="/adaptbaby">Home</a></li>
+            <li><a href="/dashboard">Dashboard</a></li>
             <li><a href="/dashboard/graph">Function Graph</a></li>
             <li><a href="/dashboard/mermaid">Mermaid Graph</a></li>
             <li><a href="/dashboard/3d">3D Graph</a></li>
@@ -25,11 +26,12 @@
             <div id="input-container">
                 <textarea id="user-input" placeholder="Enter your message..." rows="3"></textarea>
                 <div id="input-controls">
-                    <select id="model-select">
-                        {% for model_key, model_name in models.items() %}
-                            <option value="{{ model_key }}">{{ model_name }}</option>
+                    <select id="model-category-select">
+                        {% for category in model_categories %}
+                            <option value="{{ category }}">{{ category }}</option>
                         {% endfor %}
                     </select>
+                    <select id="model-select"></select>
                     <button id="send-button">Send</button>
                 </div>
             </div>
@@ -50,6 +52,25 @@
             let conversationHistory = [];
             let debugMode = false;
             const converter = new showdown.Converter();
+            const modelCategories = JSON.parse('{{ model_categories | tojson | safe }}');
+
+            function updateModelSelect(category) {
+                const modelSelect = $('#model-select');
+                modelSelect.empty();
+                for (const [modelKey, modelName] of Object.entries(modelCategories[category])) {
+                    modelSelect.append($('<option>', {
+                        value: modelKey,
+                        text: modelName
+                    }));
+                }
+            }
+
+            $('#model-category-select').change(function() {
+                updateModelSelect($(this).val());
+            });
+
+            // Initialize model select with the first category
+            updateModelSelect(Object.keys(modelCategories)[0]);
 
             function addMessage(role, content, model = '') {
                 const formattedContent = converter.makeHtml(content);

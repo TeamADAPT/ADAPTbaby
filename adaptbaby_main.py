@@ -40,51 +40,35 @@ agent_memory = []
 
 # Available models
 AVAILABLE_MODELS = {
-    # OpenAI models
-    "gpt-4o": "GPT-4o",
-    "gpt-4o-mini": "GPT-4o Mini",
-    "gpt-3.5-turbo": "GPT-3.5 Turbo",
-    "gpt-3.5-turbo-16k": "GPT-3.5 Turbo 16k",
-    "gpt-4": "GPT-4",
-    "gpt-4-32k": "GPT-4 32k",
-    "gpt-4-1106-preview": "GPT-4 Turbo",
-    "gpt-4-vision-preview": "GPT-4 Vision",
-    
-    # Anthropic models
-    "claude-2.1": "Claude 2.1",
-    "claude-instant-1.2": "Claude Instant 1.2",
-    "claude-3.5-opus": "Claude 3.5 Opus",
-    "claude-3.5-sonnet": "Claude 3.5 Sonnet",
-    "claude-3.5-haiku": "Claude 3.5 Haiku",
-    
-    # Gemini models
-    "gemini-pro": "Gemini Pro",
-    "gemini-pro-vision": "Gemini Pro Vision",
-    "gemini-1.5-pro-latest": "Gemini 1.5 Pro Latest",
-    "gemini-1.5-pro": "Gemini 1.5 Pro",
-    "gemini-1.5-pro-001": "Gemini 1.5 Pro 001",
-    "gemini-1.5-pro-vision-latest": "Gemini 1.5 Pro Vision Latest",
-    "gemini-1.5-pro-vision": "Gemini 1.5 Pro Vision",
-    "gemini-1.5-pro-vision-001": "Gemini 1.5 Pro Vision 001",
-    "gemini-1.0-pro-latest": "Gemini 1.0 Pro Latest",
-    "gemini-1.0-pro": "Gemini 1.0 Pro",
-    "gemini-1.0-pro-001": "Gemini 1.0 Pro 001",
-    "gemini-1.0-pro-vision-latest": "Gemini 1.0 Pro Vision Latest",
-    "gemini-1.0-pro-vision": "Gemini 1.0 Pro Vision",
-    "gemini-1.0-pro-vision-001": "Gemini 1.0 Pro Vision 001",
-    "chat-bison-001": "Chat Bison 001",
-    "text-bison-001": "Text Bison 001",
-    "embedding-gecko-001": "Embedding Gecko 001",
-
-    # Hugging Face models
-    "hf-distilbert-base-uncased-finetuned-sst-2-english": "Hugging Face DistilBERT (Sentiment Analysis)",
-    "hf-gpt2": "Hugging Face GPT-2",
-
-    # Groq models
-    "llama-3.1-70b-versatile": "Llama 3.1 70B Versatile",
-    "llama-3.1-8b-instant": "Llama 3.1 8B Instant",
-    "mixtral-8x7b-32768": "Mixtral 8x7B 32K",
-    "gemma-7b-it": "Gemma 7B IT",
+    "General-Purpose/Conversation": {
+        "gpt-3.5-turbo": "GPT-3.5 Turbo",
+        "gpt-3.5-turbo-16k": "GPT-3.5 Turbo 16k",
+        "claude-2.1": "Claude 2.1",
+        "claude-3-sonnet-20240229": "Claude 3 Sonnet",
+        "gemini-pro": "Gemini Pro",
+    },
+    "Advanced Reasoning": {
+        "gpt-4": "GPT-4",
+        "gpt-4-32k": "GPT-4 32k",
+        "gpt-4-1106-preview": "GPT-4 Turbo",
+        "claude-3-opus-20240229": "Claude 3 Opus",
+        "llama-3.1-70b-versatile": "Llama 3.1 70B",
+    },
+    "Multimodal": {
+        "gpt-4-vision-preview": "GPT-4 Vision",
+        "gemini-pro-vision": "Gemini Pro Vision",
+        "llava-v1.5-7b-4096-preview": "LLaVA 1.5 7B",
+    },
+    "Speed-Oriented": {
+        "claude-instant-1.2": "Claude Instant 1.2",
+        "llama-3.1-8b-instant": "Llama 3.1 8B Instant",
+    },
+    "Coding & Technical": {
+        "gpt-4-1106-preview": "GPT-4 Turbo",
+        "claude-3-opus-20240229": "Claude 3 Opus",
+        "gemini-pro": "Gemini Pro",
+        "mixtral-8x7b-32768": "Mixtral 8x7B 32K",
+    },
 }
 
 # Enable verbose logging for LiteLLM
@@ -94,18 +78,18 @@ def get_llm(model_key):
     logger.info(f"Getting LLM for model: {model_key}")
     try:
         if model_key.startswith("gpt-"):
-            return ChatOpenAI(model_name=model_key, temperature=0.7, openai_api_key=os.getenv('OpenAI_PROJECT_API_KEY'))
+            return ChatOpenAI(model_name=model_key, temperature=0.7, openai_api_key=os.getenv('OPENAI_API_KEY'))
         elif model_key.startswith("claude-"):
             return ChatAnthropic(model=model_key, temperature=0.7, anthropic_api_key=os.getenv('ANTHROPIC_API_KEY'))
         elif model_key.startswith("gemini-"):
             return ChatGoogleGenerativeAI(model=model_key, temperature=0.7, google_api_key=os.getenv('GOOGLE_API_KEY'))
-        elif model_key.startswith("hf-"):
-            return get_huggingface_model(model_key)
-        elif model_key in ["llama-3.1-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma-7b-it"]:
+        elif model_key.startswith("llama-") or model_key.startswith("mixtral-"):
             return GroqLLM(model_key)
+        elif model_key.startswith("llava-"):
+            return LLaVALLM(model_key)
         else:
             logger.warning(f"Unknown model key: {model_key}. Defaulting to GPT-3.5-turbo.")
-            return ChatOpenAI(temperature=0.7, openai_api_key=os.getenv('OpenAI_PROJECT_API_KEY'))
+            return ChatOpenAI(temperature=0.7, openai_api_key=os.getenv('OPENAI_API_KEY'))
     except Exception as e:
         logger.error(f"Error initializing LLM for model {model_key}: {str(e)}")
         raise
@@ -123,58 +107,29 @@ class GroqLLM:
         }
         data = {
             "model": self.model_key,
-            "messages": messages,
+            "messages": [{"role": "user", "content": m.content} for m in messages],
             "max_tokens": 150
         }
         response = requests.post(f"{self.base_url}/chat/completions", headers=headers, json=data)
         response.raise_for_status()
         return response.json()['choices'][0]['message']['content']
 
-def get_huggingface_model(model_key):
-    logger.info(f"Initializing Hugging Face model: {model_key}")
-    try:
-        model_name = model_key.replace("hf-", "")
-        cache_dir = os.path.expanduser("~/.cache/huggingface/hub")
-        logger.info(f"Hugging Face cache directory: {cache_dir}")
+class LLaVALLM:
+    def __init__(self, model_key):
+        self.model_key = model_key
+        # Implement LLaVA API call here
 
-        # Check if model files are already in cache
-        try:
-            snapshot_download(repo_id=model_name, cache_dir=cache_dir)
-            logger.info(f"Model {model_name} is already cached or has been downloaded.")
-        except Exception as e:
-            logger.error(f"Error downloading model {model_name}: {str(e)}")
-
-        if model_name == "distilbert-base-uncased-finetuned-sst-2-english":
-            logger.debug(f"Creating sentiment-analysis pipeline for {model_name}")
-            return pipeline("sentiment-analysis", model=model_name)
-        elif model_name == "gpt2":
-            logger.debug(f"Creating text-generation pipeline for {model_name}")
-            return pipeline("text-generation", model=model_name, max_length=200, max_new_tokens=100)
-        else:
-            raise ValueError(f"Unsupported Hugging Face model: {model_name}")
-    except Exception as e:
-        logger.error(f"Error initializing Hugging Face model {model_key}: {str(e)}")
-        raise
+    def invoke(self, messages):
+        # Implement LLaVA API call here
+        pass
 
 def langchain_completion(prompt, model_key="gpt-3.5-turbo"):
     logger.info(f"Performing langchain completion with model: {model_key}")
     try:
         llm = get_llm(model_key)
-        if model_key.startswith("hf-"):
-            if "distilbert" in model_key:
-                logger.debug(f"Using DistilBERT for sentiment analysis: {prompt}")
-                result = llm(prompt)[0]
-                logger.debug(f"DistilBERT result: {result}")
-                return f"Sentiment: {result['label']}, Score: {result['score']:.2f}"
-            elif "gpt2" in model_key:
-                logger.debug(f"Using GPT-2 for text generation: {prompt}")
-                result = llm(prompt, max_length=200, do_sample=True, temperature=0.7, truncation=True)[0]['generated_text']
-                logger.debug(f"GPT-2 result: {result}")
-                return result
-        else:
-            messages = [HumanMessage(content=prompt)]
-            response = llm.invoke(messages)
-            return response if isinstance(response, str) else response.content
+        messages = [HumanMessage(content=prompt)]
+        response = llm.invoke(messages)
+        return response if isinstance(response, str) else response.content
     except Exception as e:
         logger.error(f"Error in langchain_completion for model {model_key}: {str(e)}")
         return f"Error: {str(e)}"
@@ -210,7 +165,7 @@ def adaptbaby_agent(task, model="gpt-3.5-turbo", conversation_history=[]):
             "plan": plan,
             "execution": execution_result,
             "summary": summary,
-            "model": AVAILABLE_MODELS.get(model, model)
+            "model": model
         }
         agent_memory.append(memory_entry)
         
@@ -240,7 +195,7 @@ def create_app():
     @app.route('/adaptbaby')
     def adaptbaby_dashboard():
         logger.info("Accessing ADAPTbaby dashboard")
-        return render_template('adaptbaby.html', models=AVAILABLE_MODELS)
+        return render_template('adaptbaby.html', model_categories=AVAILABLE_MODELS)
 
     @app.route('/chat', methods=['POST'])
     def chat():
