@@ -52,9 +52,9 @@ AVAILABLE_MODELS = {
     # Anthropic models
     "claude-2.1": "Claude 2.1",
     "claude-instant-1.2": "Claude Instant 1.2",
-    "claude-3-opus-20240229": "Claude 3 Opus",
-    "claude-3-sonnet-20240229": "Claude 3 Sonnet",
-    "claude-3-haiku-20240307": "Claude 3 Haiku",
+    "claude-3.5-opus": "Claude 3.5 Opus",
+    "claude-3.5-sonnet": "Claude 3.5 Sonnet",
+    "claude-3.5-haiku": "Claude 3.5 Haiku",
     
     # Gemini models
     "gemini-pro": "Gemini Pro",

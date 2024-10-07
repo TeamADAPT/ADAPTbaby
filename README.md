@@ -73,7 +73,7 @@ ADAPTbaby is an extension of the BabyAGI project, focusing on building a self-im
 ## Available Models
 
 - OpenAI Models: GPT-4, GPT-4 Turbo, GPT-3.5 Turbo, GPT-3.5 Turbo 16k, and more
-- Anthropic Models: Claude 2.1, Claude Instant 1.2, Claude 3 Opus, Claude 3 Sonnet, Claude 3 Haiku
+- Anthropic Models: Claude 2.1, Claude Instant 1.2, Claude 3.5 Opus, Claude 3.5 Sonnet, Claude 3.5 Haiku
 - Gemini Models: Gemini Pro, Gemini Pro Vision, Gemini 1.5 Pro (various versions)
 - Hugging Face Models: DistilBERT (for sentiment analysis), GPT-2, and other models available through the Hugging Face API
 
@@ -115,6 +115,7 @@ For any questions or feedback, please open an issue on the GitHub repository or 
 
 As of the latest commit:
 - Updated `adaptbaby_main.py` with expanded multi-model support, including OpenAI, Anthropic, Gemini, and Hugging Face models
+- Added support for new Claude 3.5 models: Claude 3.5 Opus, Claude 3.5 Sonnet, and Claude 3.5 Haiku
 - Integrated multiple LLM providers and implemented `langchain_completion` function to handle different model types
 - Enhanced `adaptbaby_agent` to use the new completion function
 - Successfully tested integration with various models from different providers
