@@ -11,6 +11,7 @@ from langchain.schema import HumanMessage
 import litellm
 from transformers import pipeline
 from huggingface_hub import snapshot_download
+import requests
 
 # Set up logging
 logging.basicConfig(
@@ -78,6 +79,12 @@ AVAILABLE_MODELS = {
     # Hugging Face models
     "hf-distilbert-base-uncased-finetuned-sst-2-english": "Hugging Face DistilBERT (Sentiment Analysis)",
     "hf-gpt2": "Hugging Face GPT-2",
+
+    # Groq models
+    "llama-3.1-70b-versatile": "Llama 3.1 70B Versatile",
+    "llama-3.1-8b-instant": "Llama 3.1 8B Instant",
+    "mixtral-8x7b-32768": "Mixtral 8x7B 32K",
+    "gemma-7b-it": "Gemma 7B IT",
 }
 
 # Enable verbose logging for LiteLLM
@@ -94,12 +101,34 @@ def get_llm(model_key):
             return ChatGoogleGenerativeAI(model=model_key, temperature=0.7, google_api_key=os.getenv('GOOGLE_API_KEY'))
         elif model_key.startswith("hf-"):
             return get_huggingface_model(model_key)
+        elif model_key in ["llama-3.1-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma-7b-it"]:
+            return GroqLLM(model_key)
         else:
             logger.warning(f"Unknown model key: {model_key}. Defaulting to GPT-3.5-turbo.")
             return ChatOpenAI(temperature=0.7, openai_api_key=os.getenv('OpenAI_PROJECT_API_KEY'))
     except Exception as e:
         logger.error(f"Error initializing LLM for model {model_key}: {str(e)}")
         raise
+
+class GroqLLM:
+    def __init__(self, model_key):
+        self.model_key = model_key
+        self.api_key = os.getenv('GROQ_API_KEY')
+        self.base_url = os.getenv('GROQ_BASE_URL', 'https://api.groq.com/openai/v1')
+
+    def invoke(self, messages):
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "model": self.model_key,
+            "messages": messages,
+            "max_tokens": 150
+        }
+        response = requests.post(f"{self.base_url}/chat/completions", headers=headers, json=data)
+        response.raise_for_status()
+        return response.json()['choices'][0]['message']['content']
 
 def get_huggingface_model(model_key):
     logger.info(f"Initializing Hugging Face model: {model_key}")
@@ -145,7 +174,7 @@ def langchain_completion(prompt, model_key="gpt-3.5-turbo"):
         else:
             messages = [HumanMessage(content=prompt)]
             response = llm.invoke(messages)
-            return response.content
+            return response if isinstance(response, str) else response.content
     except Exception as e:
         logger.error(f"Error in langchain_completion for model {model_key}: {str(e)}")
         return f"Error: {str(e)}"
