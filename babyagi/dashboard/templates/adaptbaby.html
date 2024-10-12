@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADAPTbaby Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('dashboard.static', filename='css/style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="/adaptbaby">Home</a></li>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/dashboard/graph">Function Graph</a></li>
+            <li><a href="/dashboard/mermaid">Mermaid Graph</a></li>
+            <li><a href="/dashboard/3d">3D Graph</a></li>
+            <li><a href="/dashboard/logs">Logs</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h1>ADAPTbaby Dashboard</h1>
+        <div id="chat-container">
+            <div id="chat-messages"></div>
+            <div id="input-container">
+                <textarea id="user-input" placeholder="Enter your message..." rows="3"></textarea>
+                <div id="input-controls">
+                    <select id="model-category-select">
+                        {% for category in model_categories %}
+                            <option value="{{ category }}">{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="model-select"></select>
+                    <button id="send-button">Send</button>
+                </div>
+            </div>
+        </div>
+        <div id="output-container">
+            <h2>Task Details</h2>
+            <pre id="task-details"></pre>
+            <button id="download-button">Download Output (.md)</button>
+        </div>
+        <div id="debug-container">
+            <label for="debug-toggle">Debug Mode:</label>
+            <input type="checkbox" id="debug-toggle">
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            let conversationHistory = [];
+            let debugMode = false;
+            const converter = new showdown.Converter();
+            const modelCategories = JSON.parse('{{ model_categories | tojson | safe }}');
+
+            function updateModelSelect(category) {
+                const modelSelect = $('#model-select');
+                modelSelect.empty();
+                for (const [modelKey, modelName] of Object.entries(modelCategories[category])) {
+                    modelSelect.append($('<option>', {
+                        value: modelKey,
+                        text: modelName
+                    }));
+                }
+            }
+
+            $('#model-category-select').change(function() {
+                updateModelSelect($(this).val());
+            });
+
+            // Initialize model select with the first category
+            updateModelSelect(Object.keys(modelCategories)[0]);
+
+            function addMessage(role, content, model = '') {
+                const formattedContent = converter.makeHtml(content);
+                const label = role === 'user' ? 'User' : `AI (${model})`;
+                $('#chat-messages').append(`
+                    <div class="${role}-message">
+                        <div class="message-label">${label}</div>
+                        <div class="message-content">${formattedContent}</div>
+                    </div>
+                `);
+                $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+            }
+
+            function updateTaskDetails(details) {
+                $('#task-details').text(JSON.stringify(details, null, 2));
+                $('#download-button').show();
+            }
+
+            $('#send-button').click(function() {
+                const userInput = $('#user-input').val();
+                if (userInput.trim() === '') return;
+
+                addMessage('user', userInput);
+                $('#user-input').val('');
+                adjustTextareaHeight();
+
+                const selectedModel = $('#model-select').val();
+
+                $.ajax({
+                    url: '/chat',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        message: userInput,
+                        model: selectedModel,
+                        conversation_history: conversationHistory
+                    }),
+                    success: function(response) {
+                        const assistantResponse = response.response.content;
+                        const usedModel = response.response.full_response.model;
+                        addMessage('assistant', assistantResponse, usedModel);
+                        updateTaskDetails(response.response.full_response);
+                        conversationHistory = response.conversation_history;
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        addMessage('error', 'An error occurred while processing your request.');
+                    }
+                });
+            });
+
+            function adjustTextareaHeight() {
+                const textarea = $('#user-input')[0];
+                textarea.style.height = 'auto';
+                textarea.style.height = (textarea.scrollHeight) + 'px';
+            }
+
+            $('#user-input').on('input', adjustTextareaHeight);
+
+            $('#download-button').click(function() {
+                const taskDetails = $('#task-details').text();
+                const blob = new Blob([taskDetails], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'task_details.md';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+            $('#debug-toggle').change(function() {
+                debugMode = this.checked;
+                if (debugMode) {
+                    $('#output-container').show();
+                } else {
+                    $('#output-container').hide();
+                }
+            });
+
+            // Initially hide the output container
+            $('#output-container').hide();
+        });
+    </script>
+</body>
+</html>
