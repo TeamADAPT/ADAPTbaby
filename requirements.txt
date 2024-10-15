@@ -9,6 +9,7 @@ cryptography
 scikit-learn
 openai
 langchain
+langchain_google_genai
 python-dotenv
 requests
 pygments
@@ -16,3 +17,4 @@ plotly
 pandas
 anthropic
 google-generativeai
+networkx
