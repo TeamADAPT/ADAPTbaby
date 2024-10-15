@@ -25,7 +25,32 @@ from pygments.formatters import HtmlFormatter
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-# ... (previous code remains the same)
+# Load environment variables
+load_dotenv()
+
+# Initialize Flask app
+app = Flask(__name__, template_folder='templates')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///adaptbaby.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize extensions
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+admin = Admin(app, name='ADAPTbaby Admin', template_mode='bootstrap3')
+
+# Initialize rate limiter
+limiter = Limiter(
+    app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # Set up API clients
 openai_client = ChatOpenAI(model_name="gpt-4o", api_key=os.environ.get('OPENAI_API_KEY'))
@@ -41,68 +66,39 @@ groq_headers = {
     "Content-Type": "application/json"
 }
 
-# ... (previous code remains the same)
+# Available models
+MODELS = {
+    'gpt-4o': 'OpenAI GPT-4O',
+    'gemini-pro': 'Google Gemini Pro',
+    'claude-3-5-sonnet-20240620': 'Anthropic Claude 3.5 Sonnet',
+    'cohere-command': 'Cohere Command',
+    'groq-mixtral': 'Groq Mixtral-8x7B-32768',
+    'meta-llama-3-70b-instruct': 'GitHub Meta Llama 3 70B Instruct',
+    'mixtral-large': 'GitHub Mixtral Large',
+    'phi-3-medium-instruct-12b': 'GitHub Phi-3 Medium Instruct 12B'
+}
 
-@app.route('/test_models', methods=['POST'])
-@login_required
-@limiter.limit("10 per minute")
-def test_models():
-    if current_user.api_calls_count >= current_user.api_calls_quota:
-        return jsonify({"error": "API call quota exceeded"}), 429
+# User model
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(120), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    api_calls_quota = db.Column(db.Integer, default=1000)
+    api_calls_count = db.Column(db.Integer, default=0)
 
-    # Increment the API call count
-    current_user.api_calls_count += 1
-    db.session.commit()
+# ModelUsage model for tracking
+class ModelUsage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    model = db.Column(db.String(80), nullable=False)
+    prompt = db.Column(db.Text, nullable=False)
+    response_time = db.Column(db.Float, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    results = {}
-    data = request.json
-    test_prompt = data.get('prompt', "Hello, can you introduce yourself?")
-    
-    for model_key, model_name in MODELS.items():
-        try:
-            start_time = time.time()
-            if model_key == 'gpt-4o':
-                response = openai_client.invoke(test_prompt)
-            elif model_key == 'claude-3-5-sonnet-20240620':
-                response = anthropic_client.invoke(test_prompt)
-            elif model_key == 'gemini-pro':
-                response = google_client.invoke(test_prompt)
-            elif model_key == 'cohere-command':
-                response = cohere_client.invoke(test_prompt)
-            elif model_key == 'groq-mixtral':
-                groq_data = {
-                    "messages": [{"role": "user", "content": test_prompt}],
-                    "model": "llama3-8b-8192"
-                }
-                groq_response = requests.post(groq_url, headers=groq_headers, json=groq_data)
-                groq_response.raise_for_status()
-                response = groq_response.json()['choices'][0]['message']['content']
-            else:
-                # Handle GitHub models or other cases
-                response = "Test not implemented for this model yet."
-            end_time = time.time()
-            
-            response_time = end_time - start_time
-            
-            results[model_key] = {
-                "status": "success",
-                "response": str(response)[:500] + "..." if len(str(response)) > 500 else str(response),
-                "response_time": round(response_time, 2)
-            }
-            logger.info(f"Successfully tested {model_name} in {response_time:.2f} seconds")
-            
-            # Log usage
-            usage = ModelUsage(user_id=current_user.id, model=model_key, prompt=test_prompt, response_time=response_time)
-            db.session.add(usage)
-            db.session.commit()
-        except Exception as e:
-            results[model_key] = {
-                "status": "error",
-                "message": str(e),
-                "response_time": None
-            }
-            logger.error(f"Error testing {model_name}: {str(e)}")
-    
-    return jsonify(results)
+# ... (rest of the code, including routes and other functionality)
 
-# ... (rest of the code remains the same)
+if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
