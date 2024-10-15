@@ -1,0 +1,7 @@
+{
+  "venvPath": ".",
+  "venv": "adaptbaby_venv",
+  "extraPaths": [
+    "adaptbaby_venv/lib/python3.12/site-packages"
+  ]
+}

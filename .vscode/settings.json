@@ -5,5 +5,9 @@
     ],
     "python.analysis.extraPaths": [
         "${workspaceFolder}/adaptbaby_venv/lib/python3.12/site-packages"
-    ]
+    ],
+    "python.envFile": "${workspaceFolder}/.env",
+    "python.terminal.activateEnvironment": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
 }

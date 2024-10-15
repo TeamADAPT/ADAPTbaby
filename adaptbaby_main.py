@@ -18,16 +18,16 @@ from datetime import datetime
 import requests
 
 try:
-    import networkx as nx
-    import plotly.graph_objs as go
-    import plotly.utils
-    from flask import Flask, request, jsonify, render_template, redirect, url_for, flash
-    from flask_sqlalchemy import SQLAlchemy
-    from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-    from flask_bcrypt import Bcrypt
-    from flask_admin import Admin
-    from flask_admin.contrib.sqla import ModelView
-    from dotenv import load_dotenv
+    import networkx as nx  # type: ignore
+    import plotly.graph_objs as go  # type: ignore
+    import plotly.utils  # type: ignore
+    from flask import Flask, request, jsonify, render_template, redirect, url_for, flash  # type: ignore
+    from flask_sqlalchemy import SQLAlchemy  # type: ignore
+    from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user  # type: ignore
+    from flask_bcrypt import Bcrypt  # type: ignore
+    from flask_admin import Admin  # type: ignore
+    from flask_admin.contrib.sqla import ModelView  # type: ignore
+    from dotenv import load_dotenv  # type: ignore
 except ImportError as e:
     print(f"Error importing module: {e}")
     print("Make sure you're running this script in the virtual environment.")
