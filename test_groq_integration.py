@@ -1,16 +1,26 @@
 import os
+import requests
 from dotenv import load_dotenv
-from langchain_groq import ChatGroq
 
 load_dotenv()
 
 def test_groq_model():
-    groq_client = ChatGroq(model="mixtral-8x7b-32768", api_key=os.environ.get('GROQ_API_KEY'))
-    test_prompt = "Hello, can you introduce yourself?"
+    api_key = os.environ.get('GROQ_API_KEY')
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "messages": [{"role": "user", "content": "Explain the importance of fast language models"}],
+        "model": "llama3-8b-8192"
+    }
 
     try:
-        response = groq_client.invoke(test_prompt)
-        print(f"Groq model response: {response}")
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()
+        result = response.json()
+        print(f"Groq model response: {result['choices'][0]['message']['content']}")
         return True
     except Exception as e:
         print(f"Error testing Groq model: {str(e)}")
