@@ -3,11 +3,10 @@
 
 import sys
 import os
-from typing import Any, cast
+from typing import Any, Dict
 import time
 import json
 import logging
-import ast
 from datetime import datetime
 
 import requests
@@ -45,7 +44,7 @@ login_manager.login_view = 'login'  # type: ignore
 admin: Admin = Admin(app, name='ADAPTbaby Admin', template_mode='bootstrap3')
 
 # Available models
-MODELS = {
+MODELS: Dict[str, str] = {
     'groq-mixtral': 'Groq Mixtral-8x7B-32768',
     'gpt-4o': 'OpenAI GPT-4O',
     'gemini-pro': 'Google Gemini Pro',
@@ -59,26 +58,50 @@ def index() -> str:
 @app.route('/test_models', methods=['GET', 'POST'])
 def test_models():
     if request.method == 'POST':
-        prompt = request.form['prompt']
+        prompt = request.form.get('prompt', '').strip()
         selected_models = request.form.getlist('models')
+
+        if not prompt:
+            flash('Please enter a prompt.', 'error')
+            return render_template('test_models.html', models=MODELS)
+
+        if not selected_models:
+            flash('Please select at least one model to test.', 'error')
+            return render_template('test_models.html', models=MODELS)
+
         results = {}
-        
         for model in selected_models:
+            if model not in MODELS:
+                flash(f'Invalid model selected: {model}', 'error')
+                continue
+
+            start_time = time.time()
             if model == 'groq-mixtral':
-                results[model] = test_groq_model(prompt)
+                response = test_groq_model(prompt)
             elif model == 'gpt-4o':
-                results[model] = "OpenAI GPT-4O response placeholder"
+                response = "OpenAI GPT-4O response placeholder"
             elif model == 'gemini-pro':
-                results[model] = "Google Gemini Pro response placeholder"
+                response = "Google Gemini Pro response placeholder"
             elif model == 'claude-3-5-sonnet-20240620':
-                results[model] = "Anthropic Claude 3.5 Sonnet response placeholder"
-        
-        return render_template('test_results.html', results=results, prompt=prompt)
+                response = "Anthropic Claude 3.5 Sonnet response placeholder"
+            else:
+                response = "Unsupported model"
+
+            end_time = time.time()
+            results[model] = {
+                'response': response,
+                'time': round(end_time - start_time, 2)
+            }
+
+        return render_template('test_results.html', results=results, prompt=prompt, models=MODELS)
     
     return render_template('test_models.html', models=MODELS)
 
-def test_groq_model(prompt):
+def test_groq_model(prompt: str) -> str:
     groq_api_key = os.environ.get('GROQ_API_KEY')
+    if not groq_api_key:
+        return "Groq API key not found in environment variables."
+
     groq_url = "https://api.groq.com/openai/v1/chat/completions"
     groq_headers = {
         "Authorization": f"Bearer {groq_api_key}",
@@ -89,10 +112,10 @@ def test_groq_model(prompt):
         "model": "mixtral-8x7b-32768"
     }
     try:
-        response = requests.post(groq_url, headers=groq_headers, json=groq_data)
+        response = requests.post(groq_url, headers=groq_headers, json=groq_data, timeout=30)
         response.raise_for_status()
         return response.json()['choices'][0]['message']['content']
-    except Exception as e:
+    except requests.RequestException as e:
         return f"Error testing Groq model: {str(e)}"
 
 if __name__ == "__main__":

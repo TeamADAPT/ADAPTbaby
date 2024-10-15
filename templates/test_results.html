@@ -4,9 +4,10 @@
     <h2>Prompt:</h2>
     <p>{{ prompt }}</p>
     <h2>Results:</h2>
-    {% for model, response in results.items() %}
+    {% for model, data in results.items() %}
         <h3>{{ models[model] }}</h3>
-        <pre>{{ response }}</pre>
+        <p>Response time: {{ data.time }} seconds</p>
+        <pre>{{ data.response }}</pre>
     {% endfor %}
     <a href="{{ url_for('test_models') }}">Test More Models</a>
 {% endblock %}
