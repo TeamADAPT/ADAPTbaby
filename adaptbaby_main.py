@@ -3,7 +3,7 @@
 
 import sys
 import os
-from typing import Any
+from typing import Any, cast
 
 print(f"Python version: {sys.version}")
 print(f"Python executable: {sys.executable}")
@@ -46,7 +46,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db: SQLAlchemy = SQLAlchemy(app)
 bcrypt: Bcrypt = Bcrypt(app)
 login_manager: LoginManager = LoginManager(app)
-login_manager.login_view = 'login'
+login_manager.login_view = cast(str, 'login')  # Type cast to str to satisfy Pylance
 admin: Admin = Admin(app, name='ADAPTbaby Admin', template_mode='bootstrap3')
 
 # Define models (User, ModelUsage, etc.) here...
