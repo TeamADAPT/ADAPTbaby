@@ -7,8 +7,8 @@
 - Updated the `/test_models` endpoint to handle the new model
 
 ### Dependency Management
-- Updated `requirements.txt` with all necessary dependencies
-- Installed updated dependencies to resolve import issues
+- Updated `requirements.txt` with all necessary dependencies, including langchain_cohere
+- Fixed issues in `adaptbaby_main.py` related to import errors and undefined variables
 
 ### Rate Limiting and Usage Quotas Implementation
 - Added Flask-Limiter to the project dependencies
