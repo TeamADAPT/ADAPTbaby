@@ -14,6 +14,7 @@ import requests
 import plotly.graph_objs as go
 import plotly.utils
 import json
+import networkx as nx
 
 # Load environment variables
 load_dotenv()
@@ -54,7 +55,7 @@ MODELS = {
     'phi-3-medium-instruct-12b': 'GitHub Phi-3 Medium Instruct 12B'
 }
 
-# User model
+# Database Models
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -63,7 +64,6 @@ class User(UserMixin, db.Model):
     api_calls_quota = db.Column(db.Integer, default=1000)
     api_calls_count = db.Column(db.Integer, default=0)
 
-# ModelUsage model for tracking
 class ModelUsage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -72,6 +72,7 @@ class ModelUsage(db.Model):
     response_time = db.Column(db.Float, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
+# Routes
 @app.route('/test_models', methods=['POST'])
 @login_required
 def test_models():
@@ -83,13 +84,7 @@ def test_models():
         try:
             start_time = time.time()
             if model_key == 'groq-mixtral':
-                groq_data = {
-                    "messages": [{"role": "user", "content": test_prompt}],
-                    "model": "mixtral-8x7b-32768"
-                }
-                response = requests.post(groq_url, headers=groq_headers, json=groq_data)
-                response.raise_for_status()
-                response_content = response.json()['choices'][0]['message']['content']
+                response_content = test_groq_model(test_prompt)
             else:
                 # Placeholder for other models
                 response_content = f"Test response for {model_name}"
@@ -105,9 +100,7 @@ def test_models():
             logger.info(f"Successfully tested {model_name} in {response_time:.2f} seconds")
             
             # Log usage
-            usage = ModelUsage(user_id=current_user.id, model=model_key, prompt=test_prompt, response_time=response_time)
-            db.session.add(usage)
-            db.session.commit()
+            log_model_usage(current_user.id, model_key, test_prompt, response_time)
         except Exception as e:
             results[model_key] = {
                 "status": "error",
@@ -121,14 +114,34 @@ def test_models():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # Fetch user's testing history
-    user_history = ModelUsage.query.filter_by(user_id=current_user.id).order_by(ModelUsage.timestamp.desc()).limit(10).all()
-    
-    # Generate graphs
+    user_history = get_user_history(current_user.id)
     model_usage_graph = create_model_usage_graph()
     response_time_graph = create_response_time_graph()
+    function_graph = create_function_graph()
     
-    return render_template('dashboard.html', user_history=user_history, model_usage_graph=model_usage_graph, response_time_graph=response_time_graph)
+    return render_template('dashboard.html', 
+                           user_history=user_history, 
+                           model_usage_graph=model_usage_graph, 
+                           response_time_graph=response_time_graph, 
+                           function_graph=function_graph)
+
+# Helper functions
+def test_groq_model(prompt):
+    groq_data = {
+        "messages": [{"role": "user", "content": prompt}],
+        "model": "mixtral-8x7b-32768"
+    }
+    response = requests.post(groq_url, headers=groq_headers, json=groq_data)
+    response.raise_for_status()
+    return response.json()['choices'][0]['message']['content']
+
+def log_model_usage(user_id, model, prompt, response_time):
+    usage = ModelUsage(user_id=user_id, model=model, prompt=prompt, response_time=response_time)
+    db.session.add(usage)
+    db.session.commit()
+
+def get_user_history(user_id, limit=10):
+    return ModelUsage.query.filter_by(user_id=user_id).order_by(ModelUsage.timestamp.desc()).limit(limit).all()
 
 def create_model_usage_graph():
     model_usage = db.session.query(ModelUsage.model, db.func.count(ModelUsage.id)).group_by(ModelUsage.model).all()
@@ -148,6 +161,70 @@ def create_response_time_graph():
     layout = go.Layout(title='Average Response Time by Model', xaxis=dict(title='Model'), yaxis=dict(title='Average Response Time (s)'))
     fig = go.Figure(data=[trace], layout=layout)
     
+    return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
+def create_function_graph():
+    G = nx.DiGraph()
+    G.add_edge("main", "test_models")
+    G.add_edge("main", "dashboard")
+    G.add_edge("test_models", "test_groq_model")
+    G.add_edge("test_models", "log_model_usage")
+    G.add_edge("dashboard", "get_user_history")
+    G.add_edge("dashboard", "create_model_usage_graph")
+    G.add_edge("dashboard", "create_response_time_graph")
+    G.add_edge("dashboard", "create_function_graph")
+
+    pos = nx.spring_layout(G)
+    edge_trace = go.Scatter(
+        x=[], y=[], line=dict(width=0.5, color='#888'), hoverinfo='none', mode='lines')
+
+    for edge in G.edges():
+        x0, y0 = pos[edge[0]]
+        x1, y1 = pos[edge[1]]
+        edge_trace['x'] += tuple([x0, x1, None])
+        edge_trace['y'] += tuple([y0, y1, None])
+
+    node_trace = go.Scatter(
+        x=[], y=[], text=[], mode='markers', hoverinfo='text',
+        marker=dict(
+            showscale=True,
+            colorscale='YlGnBu',
+            reversescale=True,
+            color=[],
+            size=10,
+            colorbar=dict(
+                thickness=15,
+                title='Node Connections',
+                xanchor='left',
+                titleside='right'
+            ),
+            line_width=2))
+
+    for node in G.nodes():
+        x, y = pos[node]
+        node_trace['x'] += tuple([x])
+        node_trace['y'] += tuple([y])
+        node_trace['text'] += tuple([node])
+
+    for node, adjacencies in enumerate(G.adjacency()):
+        node_trace['marker']['color'] += tuple([len(adjacencies[1])])
+
+    fig = go.Figure(data=[edge_trace, node_trace],
+                    layout=go.Layout(
+                        title='Function Call Graph',
+                        titlefont_size=16,
+                        showlegend=False,
+                        hovermode='closest',
+                        margin=dict(b=20,l=5,r=5,t=40),
+                        annotations=[ dict(
+                            text="Function relationships",
+                            showarrow=False,
+                            xref="paper", yref="paper",
+                            x=0.005, y=-0.002 ) ],
+                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
+                    )
+
     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
 if __name__ == "__main__":
