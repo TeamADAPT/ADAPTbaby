@@ -1,0 +1,9 @@
+{
+    "python.pythonPath": "${workspaceFolder}/adaptbaby_venv/bin/python",
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/adaptbaby_venv/lib/python3.12/site-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/adaptbaby_venv/lib/python3.12/site-packages"
+    ]
+}

@@ -3,6 +3,7 @@
 
 import sys
 import os
+from typing import Any
 
 print(f"Python version: {sys.version}")
 print(f"Python executable: {sys.executable}")
@@ -15,38 +16,43 @@ import ast
 from datetime import datetime
 
 import requests
-import networkx as nx
-import plotly.graph_objs as go
-import plotly.utils
 
-from flask import Flask, request, jsonify, render_template, redirect, url_for, flash
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_bcrypt import Bcrypt
-from flask_admin import Admin
-from flask_admin.contrib.sqla import ModelView
-from dotenv import load_dotenv
+try:
+    import networkx as nx
+    import plotly.graph_objs as go
+    import plotly.utils
+    from flask import Flask, request, jsonify, render_template, redirect, url_for, flash
+    from flask_sqlalchemy import SQLAlchemy
+    from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+    from flask_bcrypt import Bcrypt
+    from flask_admin import Admin
+    from flask_admin.contrib.sqla import ModelView
+    from dotenv import load_dotenv
+except ImportError as e:
+    print(f"Error importing module: {e}")
+    print("Make sure you're running this script in the virtual environment.")
+    sys.exit(1)
 
 # Load environment variables
 load_dotenv()
 
 # Initialize Flask app
-app = Flask(__name__, template_folder='templates')
+app: Flask = Flask(__name__, template_folder='templates')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///adaptbaby.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize extensions
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
-login_manager = LoginManager(app)
+db: SQLAlchemy = SQLAlchemy(app)
+bcrypt: Bcrypt = Bcrypt(app)
+login_manager: LoginManager = LoginManager(app)
 login_manager.login_view = 'login'
-admin = Admin(app, name='ADAPTbaby Admin', template_mode='bootstrap3')
+admin: Admin = Admin(app, name='ADAPTbaby Admin', template_mode='bootstrap3')
 
 # Define models (User, ModelUsage, etc.) here...
 
 @app.route('/')
-def index():
+def index() -> str:
     return render_template('index.html')
 
 # Other routes (test_models, dashboard, etc.) go here...
