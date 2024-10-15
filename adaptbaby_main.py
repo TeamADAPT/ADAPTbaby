@@ -47,9 +47,9 @@ login_manager.login_view = 'login'  # type: ignore
 admin: Admin = Admin(app, name='ADAPTbaby Admin', template_mode='bootstrap3')
 
 # Initialize AI clients
-openai_client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
-genai.configure(api_key=os.environ.get('GOOGLE_API_KEY'))
-anthropic_client = Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'))
+openai_client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY', ''))
+genai.configure(api_key=os.environ.get('GOOGLE_API_KEY', ''))
+anthropic_client = Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY', ''))
 
 # Available models
 MODELS: Dict[str, str] = {
