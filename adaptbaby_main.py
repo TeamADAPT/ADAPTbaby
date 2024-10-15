@@ -169,7 +169,7 @@ def get_user_history(user_id, limit=10):
 
 def create_model_usage_graph():
     model_usage = db.session.query(ModelUsage.model, db.func.count(ModelUsage.id)).group_by(ModelUsage.model).all()
-    models, counts = zip(*model_usage)
+    models, counts = zip(*model_usage) if model_usage else ([], [])
     
     trace = go.Bar(x=models, y=counts)
     layout = go.Layout(title='Model Usage', xaxis=dict(title='Model'), yaxis=dict(title='Usage Count'))
@@ -179,7 +179,7 @@ def create_model_usage_graph():
 
 def create_response_time_graph():
     response_times = db.session.query(ModelUsage.model, db.func.avg(ModelUsage.response_time)).group_by(ModelUsage.model).all()
-    models, times = zip(*response_times)
+    models, times = zip(*response_times) if response_times else ([], [])
     
     trace = go.Bar(x=models, y=times)
     layout = go.Layout(title='Average Response Time by Model', xaxis=dict(title='Model'), yaxis=dict(title='Average Response Time (s)'))
