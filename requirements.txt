@@ -3,6 +3,7 @@ Flask-SQLAlchemy
 Flask-Login
 Flask-Bcrypt
 Flask-Admin
+Flask-Limiter
 sqlalchemy<2.0>=1.4
 cryptography
 scikit-learn
@@ -17,3 +18,5 @@ requests
 transformers
 huggingface_hub
 pygments
+plotly
+pandas
