@@ -46,7 +46,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db: SQLAlchemy = SQLAlchemy(app)
 bcrypt: Bcrypt = Bcrypt(app)
 login_manager: LoginManager = LoginManager(app)
-login_manager.login_view: Any = 'login'  # Use Any type to bypass Pylance's strict checking
+login_manager.login_view = 'login'  # type: ignore
 admin: Admin = Admin(app, name='ADAPTbaby Admin', template_mode='bootstrap3')
 
 # Define models (User, ModelUsage, etc.) here...
