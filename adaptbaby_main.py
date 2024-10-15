@@ -10,14 +10,8 @@ from dotenv import load_dotenv
 import logging
 from datetime import datetime
 import time
-from langchain_openai import ChatOpenAI
-from langchain_anthropic import ChatAnthropic
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_cohere import Cohere
+from langchain.chat_models import ChatOpenAI, ChatAnthropic, ChatGoogleGenerativeAI
 from langchain.schema import HumanMessage
-import litellm
-from transformers import pipeline
-from huggingface_hub import snapshot_download
 import requests
 import pygments
 from pygments.lexers import get_lexer_by_name
@@ -56,7 +50,6 @@ logger = logging.getLogger(__name__)
 openai_client = ChatOpenAI(model_name="gpt-4o", api_key=os.environ.get('OPENAI_API_KEY'))
 anthropic_client = ChatAnthropic(model="claude-3-5-sonnet-20240620", api_key=os.environ.get('ANTHROPIC_API_KEY'))
 google_client = ChatGoogleGenerativeAI(model="gemini-pro", api_key=os.environ.get('GOOGLE_API_KEY'))
-cohere_client = Cohere(model="command", api_key=os.environ.get('COHERE_API_KEY'))
 
 # Groq client setup
 groq_api_key = os.environ.get('GROQ_API_KEY')
@@ -71,7 +64,6 @@ MODELS = {
     'gpt-4o': 'OpenAI GPT-4O',
     'gemini-pro': 'Google Gemini Pro',
     'claude-3-5-sonnet-20240620': 'Anthropic Claude 3.5 Sonnet',
-    'cohere-command': 'Cohere Command',
     'groq-mixtral': 'Groq Mixtral-8x7B-32768',
     'meta-llama-3-70b-instruct': 'GitHub Meta Llama 3 70B Instruct',
     'mixtral-large': 'GitHub Mixtral Large',
