@@ -2,9 +2,13 @@
 
 ## Latest Updates (As of [Current Date])
 
-### Rate Limiting Implementation
+### Rate Limiting and Usage Quotas Implementation
 - Added Flask-Limiter to the project dependencies
 - Implemented basic rate limiting for the `/test_models` endpoint (10 requests per minute)
+- Added usage quotas for API calls:
+  - Updated User model to include api_calls_quota and api_calls_count
+  - Implemented quota checking in the `/test_models` endpoint
+  - Added an admin route to manage user quotas
 
 ### Repository Management
 - Resolved git conflicts and merged changes
@@ -23,12 +27,11 @@
 [Keep all previous content here]
 
 ## Next Steps
-1. Implement usage quotas for API calls
-2. Expand model capabilities by adding support for more AI models
-3. Improve the user interface with a dark/light mode toggle and more interactive elements
-4. Create user guides and API documentation
-5. Set up automated testing (unit tests and integration tests)
-6. Implement the user dashboard for viewing personal testing history and saving favorite prompts
+1. Expand model capabilities by adding support for more AI models
+2. Improve the user interface with a dark/light mode toggle and more interactive elements
+3. Create user guides and API documentation
+4. Set up automated testing (unit tests and integration tests)
+5. Implement the user dashboard for viewing personal testing history and saving favorite prompts
 
 ## Known Issues
 - GitHub models are not yet fully implemented and return placeholder responses
