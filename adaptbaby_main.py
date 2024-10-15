@@ -10,6 +10,9 @@ import logging
 from datetime import datetime
 
 import requests
+from openai import OpenAI
+import google.generativeai as genai
+from anthropic import Anthropic
 
 try:
     import networkx as nx  # type: ignore
@@ -43,12 +46,17 @@ login_manager: LoginManager = LoginManager(app)
 login_manager.login_view = 'login'  # type: ignore
 admin: Admin = Admin(app, name='ADAPTbaby Admin', template_mode='bootstrap3')
 
+# Initialize AI clients
+openai_client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+genai.configure(api_key=os.environ.get('GOOGLE_API_KEY'))
+anthropic_client = Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'))
+
 # Available models
 MODELS: Dict[str, str] = {
     'groq-mixtral': 'Groq Mixtral-8x7B-32768',
-    'gpt-4o': 'OpenAI GPT-4O',
+    'gpt-4': 'OpenAI GPT-4',
     'gemini-pro': 'Google Gemini Pro',
-    'claude-3-5-sonnet-20240620': 'Anthropic Claude 3.5 Sonnet',
+    'claude-3-sonnet': 'Anthropic Claude 3 Sonnet',
 }
 
 @app.route('/')
@@ -78,12 +86,12 @@ def test_models():
             start_time = time.time()
             if model == 'groq-mixtral':
                 response = test_groq_model(prompt)
-            elif model == 'gpt-4o':
-                response = "OpenAI GPT-4O response placeholder"
+            elif model == 'gpt-4':
+                response = test_openai_model(prompt)
             elif model == 'gemini-pro':
-                response = "Google Gemini Pro response placeholder"
-            elif model == 'claude-3-5-sonnet-20240620':
-                response = "Anthropic Claude 3.5 Sonnet response placeholder"
+                response = test_google_model(prompt)
+            elif model == 'claude-3-sonnet':
+                response = test_anthropic_model(prompt)
             else:
                 response = "Unsupported model"
 
@@ -117,6 +125,35 @@ def test_groq_model(prompt: str) -> str:
         return response.json()['choices'][0]['message']['content']
     except requests.RequestException as e:
         return f"Error testing Groq model: {str(e)}"
+
+def test_openai_model(prompt: str) -> str:
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Error testing OpenAI model: {str(e)}"
+
+def test_google_model(prompt: str) -> str:
+    try:
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        return f"Error testing Google model: {str(e)}"
+
+def test_anthropic_model(prompt: str) -> str:
+    try:
+        response = anthropic_client.completions.create(
+            model="claude-3-sonnet-20240229",
+            prompt=f"Human: {prompt}\n\nAssistant:",
+            max_tokens_to_sample=300
+        )
+        return response.completion
+    except Exception as e:
+        return f"Error testing Anthropic model: {str(e)}"
 
 if __name__ == "__main__":
     with app.app_context():
