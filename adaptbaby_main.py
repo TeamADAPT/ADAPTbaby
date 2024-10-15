@@ -16,13 +16,13 @@ from dotenv import load_dotenv
 
 # Try importing AI libraries
 try:
-    from openai import OpenAI
+    import openai
     import google.generativeai as genai
-    from anthropic import Anthropic
+    import anthropic
     AI_IMPORTS_SUCCESSFUL = True
-except ImportError:
+except ImportError as e:
     AI_IMPORTS_SUCCESSFUL = False
-    print("Warning: Some AI libraries could not be imported. Make sure they are installed.")
+    print(f"Warning: Some AI libraries could not be imported. Error: {e}")
 
 # Load environment variables
 load_dotenv()
@@ -42,9 +42,9 @@ admin = Admin(app, name='ADAPTbaby Admin', template_mode='bootstrap3')
 
 # Initialize AI clients if imports were successful
 if AI_IMPORTS_SUCCESSFUL:
-    openai_client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY', ''))
+    openai.api_key = os.environ.get('OPENAI_API_KEY', '')
     genai.configure(api_key=os.environ.get('GOOGLE_API_KEY', ''))
-    anthropic_client = Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY', ''))
+    anthropic_client = anthropic.Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY', ''))
 
 # Available models
 MODELS = {
@@ -125,7 +125,7 @@ def test_openai_model(prompt):
     if not AI_IMPORTS_SUCCESSFUL:
         return "OpenAI library not imported successfully."
     try:
-        response = openai_client.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[{"role": "user", "content": prompt}]
         )
@@ -150,7 +150,7 @@ def test_anthropic_model(prompt):
         response = anthropic_client.completions.create(
             model="claude-3-sonnet-20240229",
             prompt=f"Human: {prompt}\n\nAssistant:",
-            max_tokens_to_sample=300
+            max_tokens=300
         )
         return response.completion
     except Exception as e:
