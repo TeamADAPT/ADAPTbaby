@@ -49,13 +49,13 @@ login_manager: LoginManager = LoginManager(app)
 login_manager.login_view = 'login'  # type: ignore
 admin: Admin = Admin(app, name='ADAPTbaby Admin', template_mode='bootstrap3')
 
-# Define models (User, ModelUsage, etc.) here...
-
 @app.route('/')
 def index() -> str:
     return render_template('index.html')
 
-# Other routes (test_models, dashboard, etc.) go here...
+@app.route('/test_models')
+def test_models() -> str:
+    return "Test Models page - To be implemented"
 
 if __name__ == "__main__":
     with app.app_context():
