@@ -28,10 +28,11 @@
 
 ## Next Steps
 1. Expand model capabilities by adding support for more AI models
-2. Improve the user interface with a dark/light mode toggle and more interactive elements
-3. Create user guides and API documentation
-4. Set up automated testing (unit tests and integration tests)
-5. Implement the user dashboard for viewing personal testing history and saving favorite prompts
+2. Update the user interface to display remaining API call quota
+3. Improve the user interface with a dark/light mode toggle and more interactive elements
+4. Create user guides and API documentation
+5. Set up automated testing (unit tests and integration tests)
+6. Implement the user dashboard for viewing personal testing history and saving favorite prompts
 
 ## Known Issues
 - GitHub models are not yet fully implemented and return placeholder responses
