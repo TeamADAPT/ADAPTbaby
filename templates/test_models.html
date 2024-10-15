@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="mb-4">ADAPTbaby Model Testing</h1>
+<div class="row mb-4">
+    <div class="col-md-12">
+        <canvas id="responseTimeChart"></canvas>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <form id="testForm">
+            <div class="mb-3">
+                <label for="prompt" class="form-label">Enter your prompt:</label>
+                <textarea class="form-control" id="prompt" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Test Models</button>
+        </form>
+        <div class="loading mt-3" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <span class="ms-2">Testing models, please wait...</span>
+        </div>
+    </div>
+</div>
+<div id="results" class="row mt-4"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let responseTimeChart;
+
+    document.getElementById('testForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const prompt = document.getElementById('prompt').value;
+        const resultsDiv = document.getElementById('results');
+        const loadingDiv = document.querySelector('.loading');
+
+        resultsDiv.innerHTML = '';
+        loadingDiv.style.display = 'block';
+
+        try {
+            const response = await fetch('/test_models', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: prompt }),
+            });
+            const data = await response.json();
+            
+            loadingDiv.style.display = 'none';
+            
+            const labels = [];
+            const responseTimes = [];
+
+            for (const [model, result] of Object.entries(data)) {
+                const card = document.createElement('div');
+                card.className = 'col-md-6 result-card';
+                card.innerHTML = `
+                    <div class="card mb-3">
+                        <div class="card-header">${model}</div>
+                        <div class="card-body">
+                            <h5 class="card-title">${result.status === 'success' ? 'Success' : 'Error'}</h5>
+                            <p class="card-text ${result.status === 'error' ? 'text-danger' : ''}">${result.response || result.message}</p>
+                            <p class="card-text">Response Time: ${result.response_time ? result.response_time + ' seconds' : 'N/A'}</p>
+                        </div>
+                    </div>
+                `;
+                resultsDiv.appendChild(card);
+
+                if (result.response_time) {
+                    labels.push(model);
+                    responseTimes.push(result.response_time);
+                }
+            }
+
+            updateChart(labels, responseTimes);
+        } catch (error) {
+            loadingDiv.style.display = 'none';
+            resultsDiv.innerHTML = `<div class="alert alert-danger" role="alert">Error: ${error.message}</div>`;
+        }
+    });
+
+    function updateChart(labels, responseTimes) {
+        const ctx = document.getElementById('responseTimeChart').getContext('2d');
+        
+        if (responseTimeChart) {
+            responseTimeChart.destroy();
+        }
+
+        responseTimeChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Response Time (seconds)',
+                    data: responseTimes,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Response Time (seconds)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Models'
+                        }
+                    }
+                },
+                barThickness: 20,
+                maxBarThickness: 30
+            }
+        });
+    }
+</script>
+{% endblock %}
