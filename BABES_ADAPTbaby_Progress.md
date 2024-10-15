@@ -3,11 +3,12 @@
 ## Latest Updates (As of [Current Date])
 
 ### Expanded Model Capabilities
-- Added support for the Cohere Command model
-- Updated the `/test_models` endpoint to handle the new model
+- Added support for the Groq Mixtral-8x7B-32768 model
+- Updated the `/test_models` endpoint to handle the new Groq model
+- Cohere Command model support added in previous update
 
 ### Dependency Management
-- Updated `requirements.txt` with all necessary dependencies, including langchain_cohere
+- Updated `requirements.txt` with all necessary dependencies, including langchain_groq
 - Fixed issues in `adaptbaby_main.py` related to import errors and undefined variables
 
 ### Rate Limiting and Usage Quotas Implementation
@@ -35,7 +36,7 @@
 [Keep all previous content here]
 
 ## Next Steps
-1. Continue expanding model capabilities by adding support for more AI models
+1. Test the newly added Groq model integration
 2. Update the user interface to display remaining API call quota
 3. Improve the user interface with a dark/light mode toggle and more interactive elements
 4. Create user guides and API documentation
