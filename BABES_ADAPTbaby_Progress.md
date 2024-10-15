@@ -2,6 +2,14 @@
 
 ## Latest Updates (As of [Current Date])
 
+### Expanded Model Capabilities
+- Added support for the Cohere Command model
+- Updated the `/test_models` endpoint to handle the new model
+
+### Dependency Management
+- Updated `requirements.txt` with all necessary dependencies
+- Installed updated dependencies to resolve import issues
+
 ### Rate Limiting and Usage Quotas Implementation
 - Added Flask-Limiter to the project dependencies
 - Implemented basic rate limiting for the `/test_models` endpoint (10 requests per minute)
@@ -27,7 +35,7 @@
 [Keep all previous content here]
 
 ## Next Steps
-1. Expand model capabilities by adding support for more AI models
+1. Continue expanding model capabilities by adding support for more AI models
 2. Update the user interface to display remaining API call quota
 3. Improve the user interface with a dark/light mode toggle and more interactive elements
 4. Create user guides and API documentation

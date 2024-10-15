@@ -4,7 +4,7 @@ Flask-Login
 Flask-Bcrypt
 Flask-Admin
 Flask-Limiter
-sqlalchemy<2.0>=1.4
+SQLAlchemy<2.0,>=1.4
 cryptography
 scikit-learn
 litellm
