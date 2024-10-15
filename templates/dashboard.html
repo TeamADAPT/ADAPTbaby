@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>User Dashboard</h1>
+
+<h2>Model Usage</h2>
+<div id="model-usage-graph"></div>
+
+<h2>Average Response Time by Model</h2>
+<div id="response-time-graph"></div>
+
+<h2>Recent Testing History</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Model</th>
+            <th>Prompt</th>
+            <th>Response Time</th>
+            <th>Timestamp</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for usage in user_history %}
+        <tr>
+            <td>{{ usage.model }}</td>
+            <td>{{ usage.prompt[:50] }}...</td>
+            <td>{{ usage.response_time }} seconds</td>
+            <td>{{ usage.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+    var modelUsageGraph = JSON.parse('{{ model_usage_graph | safe }}');
+    Plotly.newPlot('model-usage-graph', modelUsageGraph.data, modelUsageGraph.layout);
+
+    var responseTimeGraph = JSON.parse('{{ response_time_graph | safe }}');
+    Plotly.newPlot('response-time-graph', responseTimeGraph.data, responseTimeGraph.layout);
+</script>
+{% endblock %}

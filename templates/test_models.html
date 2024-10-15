@@ -6,11 +6,6 @@
         <canvas id="responseTimeChart"></canvas>
     </div>
 </div>
-<div class="row mb-3">
-    <div class="col-md-12">
-        <p>Remaining API calls: {{ current_user.api_calls_quota - current_user.api_calls_count }} / {{ current_user.api_calls_quota }}</p>
-    </div>
-</div>
 <div class="row">
     <div class="col-md-6">
         <form id="testForm">
@@ -33,5 +28,53 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // ... (existing JavaScript code)
+
+    function testModels() {
+        const prompt = document.getElementById('prompt').value;
+        const resultsDiv = document.getElementById('results');
+        const loadingDiv = document.querySelector('.loading');
+        const responseTimeData = [];
+
+        resultsDiv.innerHTML = '';
+        loadingDiv.style.display = 'block';
+
+        fetch('/test_models', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ prompt: prompt }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingDiv.style.display = 'none';
+            for (const [model, result] of Object.entries(data)) {
+                const resultHtml = `
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">${model}</h5>
+                                <p class="card-text">${result.response}</p>
+                                <p class="card-text"><small class="text-muted">Response time: ${result.response_time} seconds</small></p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                resultsDiv.innerHTML += resultHtml;
+                responseTimeData.push({
+                    model: model,
+                    responseTime: result.response_time
+                });
+            }
+            updateChart(responseTimeData);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            loadingDiv.style.display = 'none';
+            resultsDiv.innerHTML = '<p class="text-danger">An error occurred while testing the models.</p>';
+        });
+    }
+
+    // ... (rest of the existing JavaScript code)
 </script>
 {% endblock %}
