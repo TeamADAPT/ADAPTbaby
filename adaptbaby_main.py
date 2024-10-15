@@ -4,11 +4,6 @@
 import sys
 import os
 from typing import Any, cast
-
-print(f"Python version: {sys.version}")
-print(f"Python executable: {sys.executable}")
-print(f"Current working directory: {os.getcwd()}")
-
 import time
 import json
 import logging
@@ -49,13 +44,56 @@ login_manager: LoginManager = LoginManager(app)
 login_manager.login_view = 'login'  # type: ignore
 admin: Admin = Admin(app, name='ADAPTbaby Admin', template_mode='bootstrap3')
 
+# Available models
+MODELS = {
+    'groq-mixtral': 'Groq Mixtral-8x7B-32768',
+    'gpt-4o': 'OpenAI GPT-4O',
+    'gemini-pro': 'Google Gemini Pro',
+    'claude-3-5-sonnet-20240620': 'Anthropic Claude 3.5 Sonnet',
+}
+
 @app.route('/')
 def index() -> str:
     return render_template('index.html')
 
-@app.route('/test_models')
-def test_models() -> str:
-    return "Test Models page - To be implemented"
+@app.route('/test_models', methods=['GET', 'POST'])
+def test_models():
+    if request.method == 'POST':
+        prompt = request.form['prompt']
+        selected_models = request.form.getlist('models')
+        results = {}
+        
+        for model in selected_models:
+            if model == 'groq-mixtral':
+                results[model] = test_groq_model(prompt)
+            elif model == 'gpt-4o':
+                results[model] = "OpenAI GPT-4O response placeholder"
+            elif model == 'gemini-pro':
+                results[model] = "Google Gemini Pro response placeholder"
+            elif model == 'claude-3-5-sonnet-20240620':
+                results[model] = "Anthropic Claude 3.5 Sonnet response placeholder"
+        
+        return render_template('test_results.html', results=results, prompt=prompt)
+    
+    return render_template('test_models.html', models=MODELS)
+
+def test_groq_model(prompt):
+    groq_api_key = os.environ.get('GROQ_API_KEY')
+    groq_url = "https://api.groq.com/openai/v1/chat/completions"
+    groq_headers = {
+        "Authorization": f"Bearer {groq_api_key}",
+        "Content-Type": "application/json"
+    }
+    groq_data = {
+        "messages": [{"role": "user", "content": prompt}],
+        "model": "mixtral-8x7b-32768"
+    }
+    try:
+        response = requests.post(groq_url, headers=groq_headers, json=groq_data)
+        response.raise_for_status()
+        return response.json()['choices'][0]['message']['content']
+    except Exception as e:
+        return f"Error testing Groq model: {str(e)}"
 
 if __name__ == "__main__":
     with app.app_context():

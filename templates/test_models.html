@@ -1,80 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class="mb-4">ADAPTbaby Model Testing</h1>
-<div class="row mb-4">
-    <div class="col-md-12">
-        <canvas id="responseTimeChart"></canvas>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-6">
-        <form id="testForm">
-            <div class="mb-3">
-                <label for="prompt" class="form-label">Enter your prompt:</label>
-                <textarea class="form-control" id="prompt" rows="3" required></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Test Models</button>
-        </form>
-        <div class="loading mt-3" style="display: none;">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <span class="ms-2">Testing models, please wait...</span>
+    <h1>Test AI Models</h1>
+    <form method="POST">
+        <div>
+            <label for="prompt">Enter your prompt:</label>
+            <textarea id="prompt" name="prompt" rows="4" cols="50" required></textarea>
         </div>
-    </div>
-</div>
-<div id="results" class="row mt-4"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    // ... (existing JavaScript code)
-
-    function testModels() {
-        const prompt = document.getElementById('prompt').value;
-        const resultsDiv = document.getElementById('results');
-        const loadingDiv = document.querySelector('.loading');
-        const responseTimeData = [];
-
-        resultsDiv.innerHTML = '';
-        loadingDiv.style.display = 'block';
-
-        fetch('/test_models', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ prompt: prompt }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            loadingDiv.style.display = 'none';
-            for (const [model, result] of Object.entries(data)) {
-                const resultHtml = `
-                    <div class="col-md-6 mb-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">${model}</h5>
-                                <p class="card-text">${result.response}</p>
-                                <p class="card-text"><small class="text-muted">Response time: ${result.response_time} seconds</small></p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                resultsDiv.innerHTML += resultHtml;
-                responseTimeData.push({
-                    model: model,
-                    responseTime: result.response_time
-                });
-            }
-            updateChart(responseTimeData);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            loadingDiv.style.display = 'none';
-            resultsDiv.innerHTML = '<p class="text-danger">An error occurred while testing the models.</p>';
-        });
-    }
-
-    // ... (rest of the existing JavaScript code)
-</script>
+        <div>
+            <label>Select models to test:</label>
+            {% for model_key, model_name in models.items() %}
+                <div>
+                    <input type="checkbox" id="{{ model_key }}" name="models" value="{{ model_key }}">
+                    <label for="{{ model_key }}">{{ model_name }}</label>
+                </div>
+            {% endfor %}
+        </div>
+        <div>
+            <input type="submit" value="Test Models">
+        </div>
+    </form>
 {% endblock %}

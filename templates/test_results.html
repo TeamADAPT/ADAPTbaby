@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Test Results</h1>
+    <h2>Prompt:</h2>
+    <p>{{ prompt }}</p>
+    <h2>Results:</h2>
+    {% for model, response in results.items() %}
+        <h3>{{ models[model] }}</h3>
+        <pre>{{ response }}</pre>
+    {% endfor %}
+    <a href="{{ url_for('test_models') }}">Test More Models</a>
+{% endblock %}
