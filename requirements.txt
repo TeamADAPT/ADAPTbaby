@@ -1,4 +1,3 @@
---user
 Flask>=2.0.0
 Flask-SQLAlchemy
 Flask-Login
