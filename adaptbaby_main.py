@@ -1,13 +1,12 @@
-#!/usr/bin/env python3
+#!/data/projects/active/ADAPTbaby/adaptbaby_venv/bin/python3
 # -*- coding: utf-8 -*-
 
 import sys
 import os
 
-# Check if running in a virtual environment
-if not hasattr(sys, 'real_prefix') and not sys.prefix == sys.base_prefix:
-    print("This script should be run from within a virtual environment.")
-    sys.exit(1)
+print(f"Python version: {sys.version}")
+print(f"Python executable: {sys.executable}")
+print(f"Current working directory: {os.getcwd()}")
 
 import time
 import json
@@ -28,12 +27,31 @@ from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from dotenv import load_dotenv
 
-# Rest of the code remains the same...
+# Load environment variables
+load_dotenv()
+
+# Initialize Flask app
+app = Flask(__name__, template_folder='templates')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///adaptbaby.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize extensions
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+admin = Admin(app, name='ADAPTbaby Admin', template_mode='bootstrap3')
+
+# Define models (User, ModelUsage, etc.) here...
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Other routes (test_models, dashboard, etc.) go here...
 
 if __name__ == "__main__":
-    print(f"Python version: {sys.version}")
-    print(f"Python executable: {sys.executable}")
-    print(f"Current working directory: {os.getcwd()}")
     with app.app_context():
         db.create_all()
     app.run(debug=True)
