@@ -2,6 +2,12 @@
 
 ## Latest Updates (As of [Current Date])
 
+### Repository Management
+- Resolved git conflicts and merged changes
+- Updated `.env.example` and `requirements.txt`
+- Added new `issue_report.md` file
+- Included `templates/` directory in the repository
+
 ### Enhanced Admin Dashboard
 - Added more detailed analytics and visualizations to the admin dashboard:
   - Implemented a model usage chart showing the number of times each model has been used
