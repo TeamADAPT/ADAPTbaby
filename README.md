@@ -1,16 +1,14 @@
 # ADAPTbaby
 
-ADAPTbaby is an experimental framework for testing and comparing various AI models, including Groq, OpenAI, Google, and Anthropic. It provides a user-friendly interface for testing models, visualizing performance metrics, and managing API keys.
+ADAPTbaby is an experimental framework for a self-building autonomous agent, inspired by the BabyAGI concept. It combines AI model testing capabilities with the ability to generate and execute new functions based on user input.
 
-## Table of Contents
+## Features
 
-- [Quick Start](#quick-start)
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Dashboard](#dashboard)
-- [Contributing](#contributing)
-- [License](#license)
+- Multi-model testing: Compare responses from various AI models including Groq, OpenAI, Google, and Anthropic.
+- Interactive dashboard: Visualize model usage, response times, and function relationships.
+- Self-building capability: Generate and execute new functions based on user prompts.
+- API key management: Securely store and manage API keys for different AI services.
+- Extensible architecture: Easily add new models or features to the framework.
 
 ## Quick Start
 
@@ -41,36 +39,17 @@ ADAPTbaby is an experimental framework for testing and comparing various AI mode
 
 5. Open your browser and navigate to `http://localhost:8080` to access the ADAPTbaby dashboard.
 
-## Features
+## Self-Building Autonomous Agent
 
-- Multi-model testing: Compare responses from various AI models including Groq, OpenAI, Google, and Anthropic.
-- Interactive dashboard: Visualize model usage, response times, and function relationships.
-- API key management: Securely store and manage API keys for different AI services.
-- Extensible architecture: Easily add new models or features to the framework.
+ADAPTbaby implements a self-building autonomous agent concept. The `/self_build` endpoint allows users to input prompts that generate new Python functions. These functions are then executed within the application, demonstrating the system's ability to extend its own capabilities.
 
-## Installation
+To use this feature:
 
-Detailed installation instructions can be found in the [Installation Guide](docs/installation.md).
+1. Send a POST request to `/self_build` with a JSON payload containing a `prompt` field.
+2. The system will generate a Python function based on the prompt using the Groq model.
+3. The generated function will be executed, and the result will be returned.
 
-## Usage
-
-1. Navigate to the test models page.
-2. Enter your prompt in the text area.
-3. Click "Test Models" to send the prompt to all available AI models.
-4. View the responses and performance metrics for each model.
-
-For more detailed usage instructions, please refer to the [User Guide](docs/user_guide.md).
-
-## Dashboard
-
-The ADAPTbaby dashboard provides several visualizations and management tools:
-
-- Model Usage Graph: Shows the frequency of use for each AI model.
-- Response Time Graph: Displays the average response time for each model.
-- Function Call Graph: Visualizes the relationships between different functions in the application.
-- Recent Testing History: Lists the most recent model tests performed by the user.
-
-To access the dashboard, navigate to `http://localhost:8080/dashboard` after starting the application.
+This feature showcases the potential for creating an AI system that can expand its own functionality based on user input and needs.
 
 ## Contributing
 
