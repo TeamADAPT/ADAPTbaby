@@ -1,58 +1,17 @@
-#!/data/projects/active/ADAPTbaby/adaptbaby_venv/bin/python3
-# -*- coding: utf-8 -*-
-
-import sys
 import os
-from typing import Any, Dict
-import time
-import json
-import logging
-from datetime import datetime
-
+from flask import Flask, request, render_template, flash
+from dotenv import load_dotenv
 import requests
-from openai import OpenAI
-import google.generativeai as genai
-from anthropic import Anthropic
-
-try:
-    import networkx as nx  # type: ignore
-    import plotly.graph_objs as go  # type: ignore
-    import plotly.utils  # type: ignore
-    from flask import Flask, request, jsonify, render_template, redirect, url_for, flash  # type: ignore
-    from flask_sqlalchemy import SQLAlchemy  # type: ignore
-    from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user  # type: ignore
-    from flask_bcrypt import Bcrypt  # type: ignore
-    from flask_admin import Admin  # type: ignore
-    from flask_admin.contrib.sqla import ModelView  # type: ignore
-    from dotenv import load_dotenv  # type: ignore
-except ImportError as e:
-    print(f"Error importing module: {e}")
-    print("Make sure you're running this script in the virtual environment.")
-    sys.exit(1)
 
 # Load environment variables
 load_dotenv()
 
 # Initialize Flask app
-app: Flask = Flask(__name__, template_folder='templates')
+app = Flask(__name__, template_folder='templates')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///adaptbaby.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Initialize extensions
-db: SQLAlchemy = SQLAlchemy(app)
-bcrypt: Bcrypt = Bcrypt(app)
-login_manager: LoginManager = LoginManager(app)
-login_manager.login_view = 'login'  # type: ignore
-admin: Admin = Admin(app, name='ADAPTbaby Admin', template_mode='bootstrap3')
-
-# Initialize AI clients
-openai_client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY', ''))
-genai.configure(api_key=os.environ.get('GOOGLE_API_KEY', ''))
-anthropic_client = Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY', ''))
 
 # Available models
-MODELS: Dict[str, str] = {
+MODELS = {
     'groq-mixtral': 'Groq Mixtral-8x7B-32768',
     'gpt-4': 'OpenAI GPT-4',
     'gemini-pro': 'Google Gemini Pro',
@@ -60,7 +19,7 @@ MODELS: Dict[str, str] = {
 }
 
 @app.route('/')
-def index() -> str:
+def index():
     return render_template('index.html')
 
 @app.route('/test_models', methods=['GET', 'POST'])
@@ -83,29 +42,21 @@ def test_models():
                 flash(f'Invalid model selected: {model}', 'error')
                 continue
 
-            start_time = time.time()
             if model == 'groq-mixtral':
                 response = test_groq_model(prompt)
-            elif model == 'gpt-4':
-                response = test_openai_model(prompt)
-            elif model == 'gemini-pro':
-                response = test_google_model(prompt)
-            elif model == 'claude-3-sonnet':
-                response = test_anthropic_model(prompt)
             else:
-                response = "Unsupported model"
+                response = f"Test response for {MODELS[model]}"
 
-            end_time = time.time()
             results[model] = {
                 'response': response,
-                'time': round(end_time - start_time, 2)
+                'time': 0.5  # Placeholder response time
             }
 
         return render_template('test_results.html', results=results, prompt=prompt, models=MODELS)
     
     return render_template('test_models.html', models=MODELS)
 
-def test_groq_model(prompt: str) -> str:
+def test_groq_model(prompt):
     groq_api_key = os.environ.get('GROQ_API_KEY')
     if not groq_api_key:
         return "Groq API key not found in environment variables."
@@ -126,36 +77,5 @@ def test_groq_model(prompt: str) -> str:
     except requests.RequestException as e:
         return f"Error testing Groq model: {str(e)}"
 
-def test_openai_model(prompt: str) -> str:
-    try:
-        response = openai_client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        return f"Error testing OpenAI model: {str(e)}"
-
-def test_google_model(prompt: str) -> str:
-    try:
-        model = genai.GenerativeModel('gemini-pro')
-        response = model.generate_content(prompt)
-        return response.text
-    except Exception as e:
-        return f"Error testing Google model: {str(e)}"
-
-def test_anthropic_model(prompt: str) -> str:
-    try:
-        response = anthropic_client.completions.create(
-            model="claude-3-sonnet-20240229",
-            prompt=f"Human: {prompt}\n\nAssistant:",
-            max_tokens_to_sample=300
-        )
-        return response.completion
-    except Exception as e:
-        return f"Error testing Anthropic model: {str(e)}"
-
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
