@@ -1,9 +1,9 @@
 import os
+import traceback
+from typing import Tuple
+
 import requests
 from dotenv import load_dotenv
-import concurrent.futures
-from termcolor import colored
-import traceback
 
 print("Starting script...")
 
@@ -36,7 +36,7 @@ MODELS = {
 
 print("Models defined.")
 
-def test_model(provider, model_key, model_name):
+def test_model(provider: str, model_key: str, model_name: str) -> Tuple[bool, str]:
     print(f"Testing {provider} - {model_name}...")
     try:
         if provider == "OpenAI":
@@ -56,8 +56,8 @@ def test_model(provider, model_key, model_name):
         traceback.print_exc()
         return False, f"{model_key} - Error: {str(e)}"
 
-def test_openai_model(model):
-    api_key = os.getenv('OPENAI_API_KEY')
+def test_openai_model(model: str) -> Tuple[bool, str]:
+    api_key = os.getenv('OPENAI_PROJECT_API_KEY')
     url = "https://api.openai.com/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -72,8 +72,8 @@ def test_openai_model(model):
     response.raise_for_status()
     return True, f"{model} - Success"
 
-def test_anthropic_model(model):
-    api_key = os.getenv('ANTHROPIC_API_KEY')
+def test_anthropic_model(model: str) -> Tuple[bool, str]:
+    api_key = os.getenv('ANTHROPIC_ADAPTBABY_241006')
     url = "https://api.anthropic.com/v1/chat/completions"
     headers = {
         "x-api-key": api_key,
@@ -89,8 +89,8 @@ def test_anthropic_model(model):
     response.raise_for_status()
     return True, f"{model} - Success"
 
-def test_google_model(model):
-    api_key = os.getenv('GOOGLE_API_KEY')
+def test_google_model(model: str) -> Tuple[bool, str]:
+    api_key = os.getenv('GEMINI_AI_STUDIO_BASE_API_KEY2')
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     headers = {
         "Content-Type": "application/json"
@@ -102,7 +102,7 @@ def test_google_model(model):
     response.raise_for_status()
     return True, f"{model} - Success"
 
-def test_groq_model(model):
+def test_groq_model(model: str) -> Tuple[bool, str]:
     api_key = os.getenv('GROQ_API_KEY')
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {
@@ -118,7 +118,7 @@ def test_groq_model(model):
     response.raise_for_status()
     return True, f"{model} - Success"
 
-def test_mistral_model(model):
+def test_mistral_model(model: str) -> Tuple[bool, str]:
     api_key = os.getenv('MISTRAL_API_KEY')
     url = "https://api.mistral.ai/v1/chat/completions"
     headers = {
@@ -149,16 +149,16 @@ def test_models():
                 total_tested += 1
                 if success:
                     total_passed += 1
-                    results.append((provider, model_name, colored(message, 'green')))
+                    results.append((provider, model_name, f"\033[92m{message}\033[0m"))
                 else:
                     total_failed += 1
-                    results.append((provider, model_name, colored(message, 'red')))
+                    results.append((provider, model_name, f"\033[91m{message}\033[0m"))
                     failed_models.append((model_key, message.split(' - Error: ')[-1]))
             except Exception as exc:
                 total_tested += 1
                 total_failed += 1
                 error_message = f"{model_key} - Error: {str(exc)}"
-                results.append((provider, model_name, colored(error_message, 'red')))
+                results.append((provider, model_name, f"\033[91m{error_message}\033[0m"))
                 failed_models.append((model_key, str(exc)))
                 print(f"Exception occurred while testing {provider} - {model_name}: {str(exc)}")
                 traceback.print_exc()
@@ -168,9 +168,9 @@ def test_models():
     for provider, model_name, message in results:
         print(f"{provider} - {model_name}: {message}")
 
-    print(f"\n{colored('Total Tested:', 'magenta')} {total_tested}")
-    print(f"{colored('Total Passed:', 'green')} {total_passed}")
-    print(f"{colored('Total Failed:', 'red')} {total_failed}")
+    print(f"\n\033[95mTotal Tested:\033[0m {total_tested}")
+    print(f"\033[92mTotal Passed:\033[0m {total_passed}")
+    print(f"\033[91mTotal Failed:\033[0m {total_failed}")
 
     print("\nFailed Models (with error codes):")
     for model, error in failed_models:
